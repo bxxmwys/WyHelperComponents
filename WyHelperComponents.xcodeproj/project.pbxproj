@@ -3,39 +3,44 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 56;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		69299FD9318F7BB922199FF8 /* Pods_WyHelperComponents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F0D2FCB518A12018ED4E892 /* Pods_WyHelperComponents.framework */; };
+		985F5DFB2D2B77380097EFCB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 985F5DEF2D2B77380097EFCB /* Assets.xcassets */; };
+		985F5DFD2D2B77380097EFCB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 985F5DF22D2B77380097EFCB /* LaunchScreen.storyboard */; };
+		985F5DFE2D2B77380097EFCB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 985F5DF52D2B77380097EFCB /* Main.storyboard */; };
+		985F5DFF2D2B77380097EFCB /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F5DEE2D2B77380097EFCB /* AppDelegate.m */; };
+		985F5E002D2B77380097EFCB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F5DF32D2B77380097EFCB /* main.m */; };
+		985F5E012D2B77380097EFCB /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F5DF72D2B77380097EFCB /* SceneDelegate.m */; };
+		985F5E022D2B77380097EFCB /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F5DF92D2B77380097EFCB /* ViewController.m */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		054F7A98FFE2DDD8AFFD941B /* Pods-WyHelperComponents.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WyHelperComponents.debug.xcconfig"; path = "Target Support Files/Pods-WyHelperComponents/Pods-WyHelperComponents.debug.xcconfig"; sourceTree = "<group>"; };
+		7F0D2FCB518A12018ED4E892 /* Pods_WyHelperComponents.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WyHelperComponents.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		98336AEC2D27E5B0002AC3DE /* WyHelperComponents.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WyHelperComponents.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		985F5DED2D2B77380097EFCB /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		985F5DEE2D2B77380097EFCB /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		985F5DEF2D2B77380097EFCB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		985F5DF02D2B77380097EFCB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		985F5DF12D2B77380097EFCB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		985F5DF32D2B77380097EFCB /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		985F5DF42D2B77380097EFCB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		985F5DF62D2B77380097EFCB /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		985F5DF72D2B77380097EFCB /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
+		985F5DF82D2B77380097EFCB /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		985F5DF92D2B77380097EFCB /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		A755DCC879F44E8FBCDA2F87 /* Pods-WyHelperComponents.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WyHelperComponents.release.xcconfig"; path = "Target Support Files/Pods-WyHelperComponents/Pods-WyHelperComponents.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		98336B032D27E5B1002AC3DE /* Exceptions for "WyHelperComponents" folder in "WyHelperComponents" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 98336AEB2D27E5B0002AC3DE /* WyHelperComponents */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		98336AEE2D27E5B0002AC3DE /* WyHelperComponents */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				98336B032D27E5B1002AC3DE /* Exceptions for "WyHelperComponents" folder in "WyHelperComponents" target */,
-			);
-			path = WyHelperComponents;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		98336AE92D27E5B0002AC3DE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69299FD9318F7BB922199FF8 /* Pods_WyHelperComponents.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,8 +50,10 @@
 		98336AE32D27E5B0002AC3DE = {
 			isa = PBXGroup;
 			children = (
-				98336AEE2D27E5B0002AC3DE /* WyHelperComponents */,
+				985F5DFA2D2B77380097EFCB /* WyHelperComponents */,
 				98336AED2D27E5B0002AC3DE /* Products */,
+				BA1A340B6A7555E780DD5419 /* Pods */,
+				9C89F23B44C497B6995F0A64 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,6 +65,42 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		985F5DFA2D2B77380097EFCB /* WyHelperComponents */ = {
+			isa = PBXGroup;
+			children = (
+				985F5DED2D2B77380097EFCB /* AppDelegate.h */,
+				985F5DEE2D2B77380097EFCB /* AppDelegate.m */,
+				985F5DEF2D2B77380097EFCB /* Assets.xcassets */,
+				985F5DF02D2B77380097EFCB /* Info.plist */,
+				985F5DF22D2B77380097EFCB /* LaunchScreen.storyboard */,
+				985F5DF32D2B77380097EFCB /* main.m */,
+				985F5DF52D2B77380097EFCB /* Main.storyboard */,
+				985F5DF62D2B77380097EFCB /* SceneDelegate.h */,
+				985F5DF72D2B77380097EFCB /* SceneDelegate.m */,
+				985F5DF82D2B77380097EFCB /* ViewController.h */,
+				985F5DF92D2B77380097EFCB /* ViewController.m */,
+			);
+			path = WyHelperComponents;
+			sourceTree = "<group>";
+		};
+		9C89F23B44C497B6995F0A64 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7F0D2FCB518A12018ED4E892 /* Pods_WyHelperComponents.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BA1A340B6A7555E780DD5419 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				054F7A98FFE2DDD8AFFD941B /* Pods-WyHelperComponents.debug.xcconfig */,
+				A755DCC879F44E8FBCDA2F87 /* Pods-WyHelperComponents.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -65,20 +108,17 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 98336B042D27E5B1002AC3DE /* Build configuration list for PBXNativeTarget "WyHelperComponents" */;
 			buildPhases = (
+				58F628DFA3E10CC7EFBAFC3E /* [CP] Check Pods Manifest.lock */,
 				98336AE82D27E5B0002AC3DE /* Sources */,
 				98336AE92D27E5B0002AC3DE /* Frameworks */,
 				98336AEA2D27E5B0002AC3DE /* Resources */,
+				3DFCDADA8A0627C7B6BD7508 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				98336AEE2D27E5B0002AC3DE /* WyHelperComponents */,
-			);
 			name = WyHelperComponents;
-			packageProductDependencies = (
-			);
 			productName = WyHelperComponents;
 			productReference = 98336AEC2D27E5B0002AC3DE /* WyHelperComponents.app */;
 			productType = "com.apple.product-type.application";
@@ -105,8 +145,6 @@
 				Base,
 			);
 			mainGroup = 98336AE32D27E5B0002AC3DE;
-			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = 98336AED2D27E5B0002AC3DE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -121,24 +159,93 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				985F5DFB2D2B77380097EFCB /* Assets.xcassets in Resources */,
+				985F5DFD2D2B77380097EFCB /* LaunchScreen.storyboard in Resources */,
+				985F5DFE2D2B77380097EFCB /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3DFCDADA8A0627C7B6BD7508 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WyHelperComponents/Pods-WyHelperComponents-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WyHelperComponents/Pods-WyHelperComponents-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WyHelperComponents/Pods-WyHelperComponents-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		58F628DFA3E10CC7EFBAFC3E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-WyHelperComponents-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		98336AE82D27E5B0002AC3DE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				985F5DFF2D2B77380097EFCB /* AppDelegate.m in Sources */,
+				985F5E002D2B77380097EFCB /* main.m in Sources */,
+				985F5E012D2B77380097EFCB /* SceneDelegate.m in Sources */,
+				985F5E022D2B77380097EFCB /* ViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXVariantGroup section */
+		985F5DF22D2B77380097EFCB /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				985F5DF12D2B77380097EFCB /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		985F5DF52D2B77380097EFCB /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				985F5DF42D2B77380097EFCB /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		98336B052D27E5B1002AC3DE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 054F7A98FFE2DDD8AFFD941B /* Pods-WyHelperComponents.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -149,8 +256,8 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -165,6 +272,7 @@
 		};
 		98336B062D27E5B1002AC3DE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A755DCC879F44E8FBCDA2F87 /* Pods-WyHelperComponents.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -175,8 +283,8 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

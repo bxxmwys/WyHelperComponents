@@ -68,19 +68,35 @@
 		985F5DFA2D2B77380097EFCB /* WyHelperComponents */ = {
 			isa = PBXGroup;
 			children = (
+				985F5E042D2B7DF30097EFCB /* Resource */,
+				985F5E032D2B7D830097EFCB /* Origin */,
+			);
+			path = WyHelperComponents;
+			sourceTree = "<group>";
+		};
+		985F5E032D2B7D830097EFCB /* Origin */ = {
+			isa = PBXGroup;
+			children = (
 				985F5DED2D2B77380097EFCB /* AppDelegate.h */,
 				985F5DEE2D2B77380097EFCB /* AppDelegate.m */,
-				985F5DEF2D2B77380097EFCB /* Assets.xcassets */,
-				985F5DF02D2B77380097EFCB /* Info.plist */,
-				985F5DF22D2B77380097EFCB /* LaunchScreen.storyboard */,
-				985F5DF32D2B77380097EFCB /* main.m */,
-				985F5DF52D2B77380097EFCB /* Main.storyboard */,
 				985F5DF62D2B77380097EFCB /* SceneDelegate.h */,
 				985F5DF72D2B77380097EFCB /* SceneDelegate.m */,
 				985F5DF82D2B77380097EFCB /* ViewController.h */,
 				985F5DF92D2B77380097EFCB /* ViewController.m */,
+				985F5DF02D2B77380097EFCB /* Info.plist */,
+				985F5DF22D2B77380097EFCB /* LaunchScreen.storyboard */,
+				985F5DF52D2B77380097EFCB /* Main.storyboard */,
+				985F5DF32D2B77380097EFCB /* main.m */,
 			);
-			path = WyHelperComponents;
+			path = Origin;
+			sourceTree = "<group>";
+		};
+		985F5E042D2B7DF30097EFCB /* Resource */ = {
+			isa = PBXGroup;
+			children = (
+				985F5DEF2D2B77380097EFCB /* Assets.xcassets */,
+			);
+			path = Resource;
 			sourceTree = "<group>";
 		};
 		9C89F23B44C497B6995F0A64 /* Frameworks */ = {
@@ -97,7 +113,6 @@
 				054F7A98FFE2DDD8AFFD941B /* Pods-WyHelperComponents.debug.xcconfig */,
 				A755DCC879F44E8FBCDA2F87 /* Pods-WyHelperComponents.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -138,6 +153,7 @@
 				};
 			};
 			buildConfigurationList = 98336AE72D27E5B0002AC3DE /* Build configuration list for PBXProject "WyHelperComponents" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -251,8 +267,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = WyHelperComponents/Info.plist;
+				INFOPLIST_FILE = WyHelperComponents/Origin/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -278,8 +295,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = WyHelperComponents/Info.plist;
+				INFOPLIST_FILE = WyHelperComponents/Origin/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;

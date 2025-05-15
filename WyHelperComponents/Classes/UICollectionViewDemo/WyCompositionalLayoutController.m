@@ -16,6 +16,7 @@ typedef NSDiffableDataSourceSnapshot<NSString *, NSString *> VERDiffableSnapshot
 static NSString *const kWyRankSection = @"WyRankSection";
 static NSString *const kWyVerSection = @"WyVerticalSection";
 static NSString *const kWyHorSection = @"WyHorizontalSection";
+static NSString *const kWyWaterfallSection = @"WyWaterfallSection";
 
 @interface WyCompositionalLayoutController ()<UICollectionViewDelegate>
 
@@ -25,6 +26,8 @@ static NSString *const kWyHorSection = @"WyHorizontalSection";
 @property (nonatomic, strong) VERDataSource *dataSource;
 // listview 数据绑定
 @property (nonatomic, strong) VERDiffableSnapshot *dataSnapshot;
+
+@property (nonatomic, strong) NSArray <NSNumber *> *cellHeights;
 
 @end
 
@@ -51,19 +54,36 @@ static NSString *const kWyHorSection = @"WyHorizontalSection";
 
 - (void)reloadListViewData {
     
-    NSArray *sections = @[kWyRankSection, kWyVerSection, kWyHorSection];
+    NSArray *sections = @[kWyRankSection, kWyHorSection, kWyVerSection];
     
     VERDiffableSnapshot *snapshot = [[VERDiffableSnapshot alloc] init];
     [snapshot appendSectionsWithIdentifiers:sections];
     
+    NSMutableArray *waterFallCellHeights = [NSMutableArray array];
+    
     for (NSString *identifier in sections) {
         NSInteger rand = arc4random()%6 + 6;
+        if ([identifier isEqualToString:kWyWaterfallSection]) {
+            rand = 30;
+        }
         NSMutableArray *items = [NSMutableArray array];
         for (int i=0; i<=rand; i++) {
-            [items addObject:[NSString stringWithFormat:@"%@-%d", identifier, i]];
+            NSInteger rand_character = arc4random()%5+1;
+            NSString *text = identifier;
+            for (int i=0; i<rand_character;i++) {
+                text = [text stringByAppendingString:identifier];
+            }
+            [items addObject:[NSString stringWithFormat:@"%@-%d", text, i]];
+            
+            if ([identifier isEqualToString:kWyWaterfallSection]) {
+                NSNumber *number = [NSNumber numberWithInt:(100+arc4random_uniform(200))];
+                [waterFallCellHeights addObject:number];
+            }
         }
         [snapshot appendItemsWithIdentifiers:items intoSectionWithIdentifier:identifier];
     }
+    
+    self.cellHeights = [NSArray arrayWithArray:waterFallCellHeights];
     
     // 记录一个，用来更新数据
     self.dataSnapshot = snapshot;
@@ -115,8 +135,8 @@ static NSString *const kWyHorSection = @"WyHorizontalSection";
 - (NSCollectionLayoutSection *)sectionForVertical {
     // 1. 创建单元格的布局项 (Item)
     NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:
-                                    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:0.5]
-                                                                   heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]];  // 设定单元格的高度为 100
+                                    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:0.33]
+                                                                   heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]];  // 设定单元格的高度为 100
 
     // 2. 创建竖向排列的 Group，每列最多 3 行
     NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
@@ -146,13 +166,13 @@ static NSString *const kWyHorSection = @"WyHorizontalSection";
 - (NSCollectionLayoutSection *)sectionForHorizontal {
     // 1. 创建单元格的布局项 (Item)
     NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:
-                                    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:0.25]
-                                                                   heightDimension:[NSCollectionLayoutDimension fractionalHeightDimension:1.0]]];  // 设定单元格的高度为 100
+                                    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                                                   heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]];  // 设定单元格的高度为 100
     
     // 2. 创建水平滚动的 Group，每一行包含多个竖向排列的列
     NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
-                                                [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:0.25]
-                                                                               heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]
+                                                [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:98]
+                                                                               heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]
                                                                                               subitem:item count:1];
     // 3. 创建 Section
     NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:horizontalGroup];
@@ -163,6 +183,63 @@ static NSString *const kWyHorSection = @"WyHorizontalSection";
     return section;
 }
 
+- (NSCollectionLayoutSection *)waterfallSectionWithColumns:(NSInteger)columns {
+    // 1️⃣ 定义 item（宽度固定，高度自适应）
+    CGFloat fractionalWidth = 1.0 / columns;
+
+    // 2️⃣ 使用 custom group 实现瀑布流
+    NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                                                    heightDimension:[NSCollectionLayoutDimension estimatedDimension:200]];
+    
+    @weakify(self)
+    NSCollectionLayoutGroupCustomItemProvider provider = ^NSArray<NSCollectionLayoutGroupCustomItem *> * (id<NSCollectionLayoutEnvironment> environment) {
+        NSMutableArray<NSCollectionLayoutGroupCustomItem *> *items = [NSMutableArray array];
+
+        // 记录每一列的当前高度
+        CGFloat columnHeights[columns];
+        for (NSInteger i = 0; i < columns; i++) {
+            columnHeights[i] = 0;
+        }
+
+        @strongify(self)
+        NSInteger totalItems = self.cellHeights.count;
+        for (NSInteger i = 0; i < totalItems; i++) {
+            // 找到当前最短的列
+            NSInteger targetColumn = 0;
+            for (NSInteger j = 1; j < columns; j++) {
+                if (columnHeights[j] < columnHeights[targetColumn]) {
+                    targetColumn = j;
+                }
+            }
+
+            // 计算 item 的 x、y 位置
+            CGFloat x = targetColumn * (98);
+            CGFloat y = columnHeights[targetColumn];
+            
+            NSLog(@"~~~~~~provider:%ld:(%.2f, %.2f)", i, x, y);
+
+            // 假设 cell 高度是 100~300 随机
+            CGFloat itemHeight = [[self.cellHeights objectAtIndex:i] floatValue];
+
+            // 创建 item
+            NSCollectionLayoutGroupCustomItem *customItem = [NSCollectionLayoutGroupCustomItem customItemWithFrame:CGRectMake(x, y, 98, itemHeight)];
+            [items addObject:customItem];
+
+            // 更新当前列的高度
+            columnHeights[targetColumn] += itemHeight + 10; // 10 是 cell 间距
+        }
+
+        return items.copy;
+    };
+
+    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize itemProvider:provider];
+
+    // 3️⃣ 创建 section
+    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:group];
+    section.contentInsets = NSDirectionalEdgeInsetsMake(10, 10, 10, 10);
+
+    return section;
+}
 
 #pragma mark - UICollectionViewDiffableDataSource
 
@@ -241,6 +318,8 @@ static NSString *const kWyHorSection = @"WyHorizontalSection";
             return [self sectionForVertical];
         } else if ([sectionIdentifier isEqualToString:kWyHorSection]) {
             return [self sectionForHorizontal];
+        } else if ([sectionIdentifier isEqualToString:kWyWaterfallSection]) {
+            return [self waterfallSectionWithColumns:3];
         }
         return nil;
     }];

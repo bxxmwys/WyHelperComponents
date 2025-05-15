@@ -16,7 +16,7 @@ target 'WyHelperComponents' do
   pod 'YYModel', '1.0.4'
   pod 'YYText', '1.0.7'
   pod 'YYCategories', '1.0.4'
-  pod 'WCDB', '1.1.0'
+  pod 'WCDB.objc', '~> 2.1.10'
   pod 'IQKeyboardManager', '6.5.19'
 
   # svga动画被压缩问题修复

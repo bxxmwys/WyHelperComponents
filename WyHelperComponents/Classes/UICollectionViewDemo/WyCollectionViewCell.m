@@ -22,7 +22,7 @@
     self.contentView.backgroundColor = [UIColor orangeColor];
     
     [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.edges.offset(0);
+        make.edges.mas_equalTo(UIEdgeInsetsZero);
     }];
 }
 
@@ -33,6 +33,7 @@
         _titleLabel.textColor = [UIColor blackColor];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
         _titleLabel.numberOfLines = 0;
+        _titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
         [self.contentView addSubview:_titleLabel];
     }
     return _titleLabel;

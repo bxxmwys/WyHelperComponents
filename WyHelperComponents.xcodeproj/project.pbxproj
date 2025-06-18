@@ -22,6 +22,7 @@
 		987E6D362DD5BE08001F305A /* GCDTestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 987E6D352DD5BE08001F305A /* GCDTestViewController.m */; };
 		987E6D3A2DD5BEBF001F305A /* BezierTestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 987E6D392DD5BEBF001F305A /* BezierTestViewController.m */; };
 		987E6D3E2DD5BF0C001F305A /* UILabelTestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 987E6D3D2DD5BF0C001F305A /* UILabelTestViewController.m */; };
+		988B1BB12E01ACB70043C324 /* WGradientCurveLineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 988B1BB02E01ACB70043C324 /* WGradientCurveLineView.m */; };
 		98D03FD12D2E757700472D48 /* WyCollectionReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD02D2E757700472D48 /* WyCollectionReusableView.m */; };
 		98D03FD52D2E82F600472D48 /* WyBackgroundReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD42D2E82F600472D48 /* WyBackgroundReusableView.m */; };
 		98D03FD82D2E8A2700472D48 /* WyCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD72D2E8A2700472D48 /* WyCollectionViewCell.m */; };
@@ -58,6 +59,8 @@
 		987E6D392DD5BEBF001F305A /* BezierTestViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BezierTestViewController.m; sourceTree = "<group>"; };
 		987E6D3C2DD5BF0C001F305A /* UILabelTestViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UILabelTestViewController.h; sourceTree = "<group>"; };
 		987E6D3D2DD5BF0C001F305A /* UILabelTestViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UILabelTestViewController.m; sourceTree = "<group>"; };
+		988B1BAF2E01ACB70043C324 /* WGradientCurveLineView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WGradientCurveLineView.h; sourceTree = "<group>"; };
+		988B1BB02E01ACB70043C324 /* WGradientCurveLineView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WGradientCurveLineView.m; sourceTree = "<group>"; };
 		98D03FCF2D2E757700472D48 /* WyCollectionReusableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCollectionReusableView.h; sourceTree = "<group>"; };
 		98D03FD02D2E757700472D48 /* WyCollectionReusableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCollectionReusableView.m; sourceTree = "<group>"; };
 		98D03FD32D2E82F600472D48 /* WyBackgroundReusableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyBackgroundReusableView.h; sourceTree = "<group>"; };
@@ -84,6 +87,8 @@
 			children = (
 				982747152D991B6D00F6D2B6 /* StretchableDialogView.h */,
 				982747162D991B6D00F6D2B6 /* StretchableDialogView.m */,
+				988B1BAF2E01ACB70043C324 /* WGradientCurveLineView.h */,
+				988B1BB02E01ACB70043C324 /* WGradientCurveLineView.m */,
 			);
 			path = Custom;
 			sourceTree = "<group>";
@@ -360,6 +365,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				988B1BB12E01ACB70043C324 /* WGradientCurveLineView.m in Sources */,
 				982747172D991B6D00F6D2B6 /* StretchableDialogView.m in Sources */,
 				987E6D3A2DD5BEBF001F305A /* BezierTestViewController.m in Sources */,
 				986C73702DA925550073C3C0 /* WyAccountModel.mm in Sources */,

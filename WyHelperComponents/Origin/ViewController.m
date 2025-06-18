@@ -13,6 +13,8 @@
 
 @property (nonatomic, strong, nullable) UITableView *tableView;
 
+@property (nonatomic, strong) NSDictionary *dataSourceDictionary;
+
 @end
 
 @implementation ViewController
@@ -20,6 +22,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    self.dataSourceDictionary = @{
+        @"CompositionalLayout":@"WyCompositionalLayoutController",
+        @"GCD":@"GCDTestViewController",
+        @"Bezier":@"BezierTestViewController",
+        @"UILael":@"UILabelTestViewController",
+//        @"":@"",
+    };
     
     [self setupView];
 }
@@ -37,18 +47,20 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 1;
+    return self.dataSourceDictionary.allKeys.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:NSStringFromClass(UITableViewCell.class) forIndexPath:indexPath];
-    cell.textLabel.text = @"Demo";
+    cell.textLabel.text = [self.dataSourceDictionary.allKeys objectAtIndex:indexPath.item];
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    WyCompositionalLayoutController *vc = WyCompositionalLayoutController.new;
-    [self.navigationController pushViewController:vc animated:YES];
+    NSString *className = [self.dataSourceDictionary.allValues objectAtIndex:indexPath.item];
+    Class cls = NSClassFromString(className);
+    id instance = [[cls alloc] init];
+    [self.navigationController pushViewController:instance animated:YES];
 }
 
 

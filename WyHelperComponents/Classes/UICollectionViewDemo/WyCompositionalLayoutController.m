@@ -17,6 +17,7 @@ static NSString *const kWyRankSection = @"WyRankSection";
 static NSString *const kWyVerSection = @"WyVerticalSection";
 static NSString *const kWyHorSection = @"WyHorizontalSection";
 static NSString *const kWyWaterfallSection = @"WyWaterfallSection";
+static NSString *const kWyTagSection = @"WyTagSection";
 
 @interface WyCompositionalLayoutController ()<UICollectionViewDelegate>
 
@@ -129,6 +130,15 @@ static NSString *const kWyWaterfallSection = @"WyWaterfallSection";
     section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
     section.interGroupSpacing = 10;
     
+    // 3.1 section header
+    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
+    header.pinToVisibleBounds = NO;
+    
+    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
+    footer.pinToVisibleBounds = NO;
+    section.boundarySupplementaryItems = @[header, footer];
+    
     return section;
 }
 
@@ -160,6 +170,15 @@ static NSString *const kWyWaterfallSection = @"WyWaterfallSection";
     section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
     section.interGroupSpacing = 10;
     
+    // 3.1 section header
+    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
+    header.pinToVisibleBounds = NO;
+    
+    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
+    footer.pinToVisibleBounds = NO;
+    section.boundarySupplementaryItems = @[header, footer];
+    
     return section;
 }
 
@@ -179,6 +198,15 @@ static NSString *const kWyWaterfallSection = @"WyWaterfallSection";
     section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 使其支持水平滚动
     section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
     section.interGroupSpacing = 10;
+    
+    // 3.1 section header
+    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
+    header.pinToVisibleBounds = NO;
+    
+    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
+    footer.pinToVisibleBounds = NO;
+    section.boundarySupplementaryItems = @[header, footer];
     
     return section;
 }

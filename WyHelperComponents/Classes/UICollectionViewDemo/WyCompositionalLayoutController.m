@@ -9,6 +9,8 @@
 #import "WyBackgroundReusableView.h"
 #import "WyCollectionReusableView.h"
 #import "WyCollectionViewCell.h"
+#import "WaterfallItemModel.h"
+#import "WaterfallCell.h"
 
 typedef UICollectionViewDiffableDataSource<NSString *, NSString *> VERDataSource;
 typedef NSDiffableDataSourceSnapshot<NSString *, NSString *> VERDiffableSnapshot;
@@ -29,6 +31,8 @@ static NSString *const kWyTagSection = @"WyTagSection";
 @property (nonatomic, strong) VERDiffableSnapshot *dataSnapshot;
 
 @property (nonatomic, strong) NSArray <NSNumber *> *cellHeights;
+
+@property (nonatomic, strong) NSArray<WaterfallItemModel *> *items;
 
 @end
 
@@ -55,7 +59,18 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
 - (void)reloadListViewData {
     
-    NSArray *sections = @[kWyRankSection, kWyHorSection, kWyVerSection];
+    NSArray *sections = @[kWyRankSection, kWyHorSection, kWyVerSection, kWyWaterfallSection];
+    
+    CGFloat spacing = 16;
+    CGFloat width = UIScreen.mainScreen.bounds.size.width - spacing * 2;
+
+   // Step 1: Prepare data
+   NSMutableArray *heights = [NSMutableArray array];
+   for (NSInteger i = 0; i < 50; i++) {
+       [heights addObject:@(arc4random_uniform(100) + 100)]; // Height: 100 ~ 199
+   }
+   self.items = [self generateWaterfallItemsFromHeights:heights containerWidth:width spacing:10];
+
     
     VERDiffableSnapshot *snapshot = [[VERDiffableSnapshot alloc] init];
     [snapshot appendSectionsWithIdentifiers:sections];
@@ -63,25 +78,31 @@ static NSString *const kWyTagSection = @"WyTagSection";
     NSMutableArray *waterFallCellHeights = [NSMutableArray array];
     
     for (NSString *identifier in sections) {
-        NSInteger rand = arc4random()%6 + 6;
-        if ([identifier isEqualToString:kWyWaterfallSection]) {
-            rand = 30;
-        }
         NSMutableArray *items = [NSMutableArray array];
-        for (int i=0; i<=rand; i++) {
-            NSInteger rand_character = arc4random()%5+1;
-            NSString *text = identifier;
-            for (int i=0; i<rand_character;i++) {
-                text = [text stringByAppendingString:identifier];
+        if ([identifier isEqualToString:kWyWaterfallSection]) {
+            for (int i=0; i<self.items.count; i++) {
+                [items addObject:[NSString stringWithFormat:@"%@-%d", identifier, i]];
             }
-            [items addObject:[NSString stringWithFormat:@"%@-%d", text, i]];
-            
-            if ([identifier isEqualToString:kWyWaterfallSection]) {
-                NSNumber *number = [NSNumber numberWithInt:(100+arc4random_uniform(200))];
-                [waterFallCellHeights addObject:number];
+        } else {
+            NSInteger rand = arc4random()%6 + 6;
+            for (int i=0; i<=rand; i++) {
+                NSInteger rand_character = arc4random()%5+1;
+                NSString *text = identifier;
+                for (int i=0; i<rand_character;i++) {
+                    text = [text stringByAppendingString:identifier];
+                }
+                [items addObject:[NSString stringWithFormat:@"%@-%d", text, i]];
+                
+                if ([identifier isEqualToString:kWyWaterfallSection]) {
+                    NSNumber *number = [NSNumber numberWithInt:(100+arc4random_uniform(200))];
+                    [waterFallCellHeights addObject:number];
+                }
             }
         }
-        [snapshot appendItemsWithIdentifiers:items intoSectionWithIdentifier:identifier];
+        
+        if (items.count > 0) {
+            [snapshot appendItemsWithIdentifiers:items intoSectionWithIdentifier:identifier];
+        }
     }
     
     self.cellHeights = [NSArray arrayWithArray:waterFallCellHeights];
@@ -99,6 +120,28 @@ static NSString *const kWyTagSection = @"WyTagSection";
     } else {
         [self.dataSource applySnapshot:snapshot animatingDifferences:NO];
     }
+}
+
+- (NSArray<WaterfallItemModel *> *)generateWaterfallItemsFromHeights:(NSArray<NSNumber *> *)heights containerWidth:(CGFloat)containerWidth spacing:(CGFloat)spacing {
+    CGFloat columnWidth = (containerWidth - spacing) / 2.0;
+    NSMutableArray *columnHeights = [@[@0.0, @0.0] mutableCopy];
+    NSMutableArray *result = [NSMutableArray array];
+
+    for (NSInteger i = 0; i < heights.count; i++) {
+        CGFloat h = heights[i].doubleValue;
+        NSInteger col = [columnHeights[0] doubleValue] <= [columnHeights[1] doubleValue] ? 0 : 1;
+        CGFloat y = [columnHeights[col] doubleValue];
+
+        WaterfallItemModel *model = [WaterfallItemModel new];
+        model.identifier = [NSString stringWithFormat:@"Item %ld\n%.0f pt", (long)i+1, h];
+        model.height = h;
+        model.columnIndex = col;
+        model.yOffset = y;
+
+        columnHeights[col] = @(y + h + spacing);
+        [result addObject:model];
+    }
+    return result;
 }
 
 #pragma mark - Section 样式
@@ -211,6 +254,126 @@ static NSString *const kWyTagSection = @"WyTagSection";
     return section;
 }
 
+- (NSCollectionLayoutSection *)sectionForWaterFall {
+    
+    CGFloat spacing = 10;
+    // 获取列数，默认为 2
+    NSInteger numberOfColumn = 2;
+    
+    // 根据容器宽度和列数计算 item 宽度和高度
+    CGFloat totalSpacing = (numberOfColumn - 1) * spacing;
+    CGFloat columnWidth = (([UIScreen mainScreen].bounds.size.width - 32) - totalSpacing) / numberOfColumn ;
+    
+    
+    NSMutableArray *customItems = [NSMutableArray array];
+    for (WaterfallItemModel *item in self.items) {
+        CGFloat x = item.columnIndex == 0 ? 0 : (columnWidth + spacing);
+        CGRect frame = CGRectMake(x, item.yOffset, columnWidth, item.height);
+        [customItems addObject:[NSCollectionLayoutGroupCustomItem customItemWithFrame:frame]];
+    }
+
+    NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]];
+    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize itemProvider:^NSArray<NSCollectionLayoutGroupCustomItem *> * _Nonnull(id<NSCollectionLayoutEnvironment>  _Nonnull layoutEnvironment) {
+        return customItems;
+    }];
+
+    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:group];
+    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+    section.interGroupSpacing = 10;
+    
+    // 3.1 section header
+    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
+    header.pinToVisibleBounds = NO;
+    
+    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
+    footer.pinToVisibleBounds = NO;
+    section.boundarySupplementaryItems = @[header, footer];
+    
+    return section;
+}
+
+- (NSCollectionLayoutSection *)generateWaterfallSection {
+    // collectionView 为 nil 时直接返回 nil
+    if (!self.listView) {
+        return nil;
+    }
+
+    // 设置边距
+    NSDirectionalEdgeInsets edgeInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+
+    // 设置 group 的尺寸（宽度为整个宽度，高度为估算）
+#warning oc巨坑，需要使用absoluteDimension，否则会陷入无限循环的计算中，导致崩溃；Swift只要使用.estimated(100)即可正常使用。
+    NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                                                       heightDimension:[NSCollectionLayoutDimension absoluteDimension:4500]];
+
+    // 创建自定义 group（使用 block 实现自定义瀑布流布局）
+    NSCollectionLayoutGroupCustomItemProvider handler = ^NSArray<NSCollectionLayoutGroupCustomItem *> * _Nonnull(id<NSCollectionLayoutEnvironment>  _Nonnull environment) {
+        NSMutableArray<NSCollectionLayoutGroupCustomItem *> *items = [NSMutableArray array];
+
+        // 获取列间距，默认为 1.0
+        CGFloat space = 10;
+
+        // 获取列数，默认为 2
+        NSInteger numberOfColumn = 2;
+
+        // 初始化每一列的当前高度
+        NSMutableDictionary<NSNumber *, NSNumber *> *layouts = [NSMutableDictionary dictionary];
+        for (NSInteger i = 0; i < numberOfColumn; i++) {
+            layouts[@(i)] = @(0);
+        }
+
+        NSInteger targetColumn = 0;
+
+        NSInteger itemCount = self.items.count;
+        for (NSInteger i = 0; i < itemCount; i++) {
+            targetColumn = 0;
+
+            // 找出当前最短的列
+            for (NSInteger x = 0; x < numberOfColumn; x++) {
+                if ([layouts[@(x)] floatValue] < [layouts[@(targetColumn)] floatValue]) {
+                    targetColumn = x;
+                }
+            }
+
+//            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:i inSection:section];
+
+            // 获取 item 的尺寸
+            WaterfallItemModel *model = [self.items objectAtIndex:i];
+            CGFloat height = model.height;
+
+            // 根据容器宽度和列数计算 item 宽度和高度
+            CGFloat totalSpacing = (numberOfColumn - 1) * space;
+            CGFloat width = (environment.container.effectiveContentSize.width - totalSpacing) / numberOfColumn;
+            
+
+            CGFloat x = edgeInsets.leading + width * targetColumn + space * targetColumn;
+            CGFloat y = [layouts[@(targetColumn)] floatValue];
+
+            NSLog(@"~~~~~~provider:(%.2f, %.2f)", x, y);
+
+            CGFloat spacing = (y == edgeInsets.top) ? 0 : space;
+            CGRect frame = CGRectMake(x, y + spacing, width, height);
+
+            // 创建自定义 item
+            NSCollectionLayoutGroupCustomItem *item = [NSCollectionLayoutGroupCustomItem customItemWithFrame:frame];
+            [items addObject:item];
+
+            // 更新当前列的高度
+            layouts[@(targetColumn)] = @(y + spacing + height);
+        }
+
+        return items;
+    };
+
+    // 创建 group
+    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize itemProvider:handler];
+    group.contentInsets = edgeInsets;
+
+    // 返回 section
+    return [NSCollectionLayoutSection sectionWithGroup:group];
+}
+
 - (NSCollectionLayoutSection *)waterfallSectionWithColumns:(NSInteger)columns {
     // 1️⃣ 定义 item（宽度固定，高度自适应）
     CGFloat fractionalWidth = 1.0 / columns;
@@ -268,6 +431,9 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
     return section;
 }
+
+
+
 
 #pragma mark - UICollectionViewDiffableDataSource
 
@@ -347,7 +513,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
         } else if ([sectionIdentifier isEqualToString:kWyHorSection]) {
             return [self sectionForHorizontal];
         } else if ([sectionIdentifier isEqualToString:kWyWaterfallSection]) {
-            return [self waterfallSectionWithColumns:3];
+            return [self generateWaterfallSection];
         }
         return nil;
     }];

@@ -23,6 +23,8 @@
 		987E6D3A2DD5BEBF001F305A /* BezierTestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 987E6D392DD5BEBF001F305A /* BezierTestViewController.m */; };
 		987E6D3E2DD5BF0C001F305A /* UILabelTestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 987E6D3D2DD5BF0C001F305A /* UILabelTestViewController.m */; };
 		988B1BB12E01ACB70043C324 /* WGradientCurveLineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 988B1BB02E01ACB70043C324 /* WGradientCurveLineView.m */; };
+		98A506C02E1939E80068A2E9 /* WaterfallItemModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 98A506BF2E1939E80068A2E9 /* WaterfallItemModel.m */; };
+		98A506C32E193A060068A2E9 /* WaterfallCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 98A506C22E193A060068A2E9 /* WaterfallCell.m */; };
 		98D03FD12D2E757700472D48 /* WyCollectionReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD02D2E757700472D48 /* WyCollectionReusableView.m */; };
 		98D03FD52D2E82F600472D48 /* WyBackgroundReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD42D2E82F600472D48 /* WyBackgroundReusableView.m */; };
 		98D03FD82D2E8A2700472D48 /* WyCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD72D2E8A2700472D48 /* WyCollectionViewCell.m */; };
@@ -61,6 +63,10 @@
 		987E6D3D2DD5BF0C001F305A /* UILabelTestViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UILabelTestViewController.m; sourceTree = "<group>"; };
 		988B1BAF2E01ACB70043C324 /* WGradientCurveLineView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WGradientCurveLineView.h; sourceTree = "<group>"; };
 		988B1BB02E01ACB70043C324 /* WGradientCurveLineView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WGradientCurveLineView.m; sourceTree = "<group>"; };
+		98A506BE2E1939E80068A2E9 /* WaterfallItemModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WaterfallItemModel.h; sourceTree = "<group>"; };
+		98A506BF2E1939E80068A2E9 /* WaterfallItemModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WaterfallItemModel.m; sourceTree = "<group>"; };
+		98A506C12E193A060068A2E9 /* WaterfallCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WaterfallCell.h; sourceTree = "<group>"; };
+		98A506C22E193A060068A2E9 /* WaterfallCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WaterfallCell.m; sourceTree = "<group>"; };
 		98D03FCF2D2E757700472D48 /* WyCollectionReusableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCollectionReusableView.h; sourceTree = "<group>"; };
 		98D03FD02D2E757700472D48 /* WyCollectionReusableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCollectionReusableView.m; sourceTree = "<group>"; };
 		98D03FD32D2E82F600472D48 /* WyBackgroundReusableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyBackgroundReusableView.h; sourceTree = "<group>"; };
@@ -172,6 +178,10 @@
 				98D03FD42D2E82F600472D48 /* WyBackgroundReusableView.m */,
 				985F5E0D2D2BBF9A0097EFCB /* WyCompositionalLayoutController.h */,
 				985F5E0E2D2BBF9A0097EFCB /* WyCompositionalLayoutController.m */,
+				98A506BE2E1939E80068A2E9 /* WaterfallItemModel.h */,
+				98A506BF2E1939E80068A2E9 /* WaterfallItemModel.m */,
+				98A506C12E193A060068A2E9 /* WaterfallCell.h */,
+				98A506C22E193A060068A2E9 /* WaterfallCell.m */,
 			);
 			path = UICollectionViewDemo;
 			sourceTree = "<group>";
@@ -366,9 +376,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				988B1BB12E01ACB70043C324 /* WGradientCurveLineView.m in Sources */,
+				98A506C02E1939E80068A2E9 /* WaterfallItemModel.m in Sources */,
 				982747172D991B6D00F6D2B6 /* StretchableDialogView.m in Sources */,
 				987E6D3A2DD5BEBF001F305A /* BezierTestViewController.m in Sources */,
 				986C73702DA925550073C3C0 /* WyAccountModel.mm in Sources */,
+				98A506C32E193A060068A2E9 /* WaterfallCell.m in Sources */,
 				985F5DFF2D2B77380097EFCB /* AppDelegate.m in Sources */,
 				985F5E002D2B77380097EFCB /* main.m in Sources */,
 				985F5E012D2B77380097EFCB /* SceneDelegate.m in Sources */,

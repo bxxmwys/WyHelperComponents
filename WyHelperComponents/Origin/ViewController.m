@@ -28,7 +28,7 @@
         @"GCD":@"GCDTestViewController",
         @"Bezier":@"BezierTestViewController",
         @"UILael":@"UILabelTestViewController",
-//        @"":@"",
+        @"Section分页":@"SectionPagingViewController",
     };
     
     [self setupView];

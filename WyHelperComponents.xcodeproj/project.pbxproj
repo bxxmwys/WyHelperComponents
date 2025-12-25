@@ -8,7 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		69299FD9318F7BB922199FF8 /* Pods_WyHelperComponents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F0D2FCB518A12018ED4E892 /* Pods_WyHelperComponents.framework */; };
+		98262A4B2EC5CA54004AAF15 /* SectionPagingFlowLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 98262A482EC5CA54004AAF15 /* SectionPagingFlowLayout.m */; };
+		98262A4C2EC5CA54004AAF15 /* SectionPagingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 98262A4A2EC5CA54004AAF15 /* SectionPagingViewController.m */; };
+		98262A4D2EC5CA54004AAF15 /* SectionPagingCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98262A462EC5CA54004AAF15 /* SectionPagingCollectionView.m */; };
 		982747172D991B6D00F6D2B6 /* StretchableDialogView.m in Sources */ = {isa = PBXBuildFile; fileRef = 982747162D991B6D00F6D2B6 /* StretchableDialogView.m */; };
+		985EE8B32EFD41B600B23083 /* VNovelRefreshFooter.m in Sources */ = {isa = PBXBuildFile; fileRef = 985EE8B02EFD41B600B23083 /* VNovelRefreshFooter.m */; };
+		985EE8B42EFD41B600B23083 /* VNovelRefreshHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 985EE8B22EFD41B600B23083 /* VNovelRefreshHeader.m */; };
+		985EE8B92EFD436B00B23083 /* novel_load_light.json in Resources */ = {isa = PBXBuildFile; fileRef = 985EE8B82EFD436B00B23083 /* novel_load_light.json */; };
+		985EE8BA2EFD436B00B23083 /* novel_load_dark.json in Resources */ = {isa = PBXBuildFile; fileRef = 985EE8B72EFD436B00B23083 /* novel_load_dark.json */; };
+		985EE8BF2EFD446800B23083 /* UIScrollView+CustomMJRefresh.m in Sources */ = {isa = PBXBuildFile; fileRef = 985EE8BE2EFD446800B23083 /* UIScrollView+CustomMJRefresh.m */; };
 		985F5DFB2D2B77380097EFCB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 985F5DEF2D2B77380097EFCB /* Assets.xcassets */; };
 		985F5DFD2D2B77380097EFCB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 985F5DF22D2B77380097EFCB /* LaunchScreen.storyboard */; };
 		985F5DFE2D2B77380097EFCB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 985F5DF52D2B77380097EFCB /* Main.storyboard */; };
@@ -33,9 +41,24 @@
 /* Begin PBXFileReference section */
 		054F7A98FFE2DDD8AFFD941B /* Pods-WyHelperComponents.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WyHelperComponents.debug.xcconfig"; path = "Target Support Files/Pods-WyHelperComponents/Pods-WyHelperComponents.debug.xcconfig"; sourceTree = "<group>"; };
 		7F0D2FCB518A12018ED4E892 /* Pods_WyHelperComponents.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WyHelperComponents.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		98262A452EC5CA54004AAF15 /* SectionPagingCollectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SectionPagingCollectionView.h; sourceTree = "<group>"; };
+		98262A462EC5CA54004AAF15 /* SectionPagingCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SectionPagingCollectionView.m; sourceTree = "<group>"; };
+		98262A472EC5CA54004AAF15 /* SectionPagingFlowLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SectionPagingFlowLayout.h; sourceTree = "<group>"; };
+		98262A482EC5CA54004AAF15 /* SectionPagingFlowLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SectionPagingFlowLayout.m; sourceTree = "<group>"; };
+		98262A492EC5CA54004AAF15 /* SectionPagingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SectionPagingViewController.h; sourceTree = "<group>"; };
+		98262A4A2EC5CA54004AAF15 /* SectionPagingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SectionPagingViewController.m; sourceTree = "<group>"; };
 		982747152D991B6D00F6D2B6 /* StretchableDialogView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StretchableDialogView.h; sourceTree = "<group>"; };
 		982747162D991B6D00F6D2B6 /* StretchableDialogView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StretchableDialogView.m; sourceTree = "<group>"; };
 		98336AEC2D27E5B0002AC3DE /* WyHelperComponents.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WyHelperComponents.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		985EE8AF2EFD41B600B23083 /* VNovelRefreshFooter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VNovelRefreshFooter.h; sourceTree = "<group>"; };
+		985EE8B02EFD41B600B23083 /* VNovelRefreshFooter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VNovelRefreshFooter.m; sourceTree = "<group>"; };
+		985EE8B12EFD41B600B23083 /* VNovelRefreshHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VNovelRefreshHeader.h; sourceTree = "<group>"; };
+		985EE8B22EFD41B600B23083 /* VNovelRefreshHeader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VNovelRefreshHeader.m; sourceTree = "<group>"; };
+		985EE8B52EFD422600B23083 /* CommonDefine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommonDefine.h; sourceTree = "<group>"; };
+		985EE8B72EFD436B00B23083 /* novel_load_dark.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = novel_load_dark.json; sourceTree = "<group>"; };
+		985EE8B82EFD436B00B23083 /* novel_load_light.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = novel_load_light.json; sourceTree = "<group>"; };
+		985EE8BD2EFD446800B23083 /* UIScrollView+CustomMJRefresh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+CustomMJRefresh.h"; sourceTree = "<group>"; };
+		985EE8BE2EFD446800B23083 /* UIScrollView+CustomMJRefresh.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView+CustomMJRefresh.m"; sourceTree = "<group>"; };
 		985F5DED2D2B77380097EFCB /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		985F5DEE2D2B77380097EFCB /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		985F5DEF2D2B77380097EFCB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -88,9 +111,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		98262A442EC5C405004AAF15 /* PagingDemo */ = {
+			isa = PBXGroup;
+			children = (
+				98262A452EC5CA54004AAF15 /* SectionPagingCollectionView.h */,
+				98262A462EC5CA54004AAF15 /* SectionPagingCollectionView.m */,
+				98262A472EC5CA54004AAF15 /* SectionPagingFlowLayout.h */,
+				98262A482EC5CA54004AAF15 /* SectionPagingFlowLayout.m */,
+				98262A492EC5CA54004AAF15 /* SectionPagingViewController.h */,
+				98262A4A2EC5CA54004AAF15 /* SectionPagingViewController.m */,
+			);
+			path = PagingDemo;
+			sourceTree = "<group>";
+		};
 		982747142D991B4D00F6D2B6 /* Custom */ = {
 			isa = PBXGroup;
 			children = (
+				985EE8AF2EFD41B600B23083 /* VNovelRefreshFooter.h */,
+				985EE8B02EFD41B600B23083 /* VNovelRefreshFooter.m */,
+				985EE8B12EFD41B600B23083 /* VNovelRefreshHeader.h */,
+				985EE8B22EFD41B600B23083 /* VNovelRefreshHeader.m */,
 				982747152D991B6D00F6D2B6 /* StretchableDialogView.h */,
 				982747162D991B6D00F6D2B6 /* StretchableDialogView.m */,
 				988B1BAF2E01ACB70043C324 /* WGradientCurveLineView.h */,
@@ -117,9 +157,37 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		985EE8B62EFD432900B23083 /* Lottile */ = {
+			isa = PBXGroup;
+			children = (
+				985EE8B72EFD436B00B23083 /* novel_load_dark.json */,
+				985EE8B82EFD436B00B23083 /* novel_load_light.json */,
+			);
+			path = Lottile;
+			sourceTree = "<group>";
+		};
+		985EE8BB2EFD443900B23083 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				985EE8B52EFD422600B23083 /* CommonDefine.h */,
+				985EE8BC2EFD443F00B23083 /* Category */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
+		985EE8BC2EFD443F00B23083 /* Category */ = {
+			isa = PBXGroup;
+			children = (
+				985EE8BD2EFD446800B23083 /* UIScrollView+CustomMJRefresh.h */,
+				985EE8BE2EFD446800B23083 /* UIScrollView+CustomMJRefresh.m */,
+			);
+			path = Category;
+			sourceTree = "<group>";
+		};
 		985F5DFA2D2B77380097EFCB /* WyHelperComponents */ = {
 			isa = PBXGroup;
 			children = (
+				985EE8BB2EFD443900B23083 /* Util */,
 				982747142D991B4D00F6D2B6 /* Custom */,
 				985F5E0B2D2BBF130097EFCB /* Classes */,
 				985F5E042D2B7DF30097EFCB /* Resource */,
@@ -150,6 +218,7 @@
 		985F5E042D2B7DF30097EFCB /* Resource */ = {
 			isa = PBXGroup;
 			children = (
+				985EE8B62EFD432900B23083 /* Lottile */,
 				985F5DEF2D2B77380097EFCB /* Assets.xcassets */,
 			);
 			path = Resource;
@@ -158,6 +227,7 @@
 		985F5E0B2D2BBF130097EFCB /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				98262A442EC5C405004AAF15 /* PagingDemo */,
 				987E6D3B2DD5BEE7001F305A /* UILabelDemo */,
 				987E6D372DD5BE84001F305A /* BezierDemo */,
 				987E6D332DD5BDD0001F305A /* GCDTestDemo */,
@@ -319,6 +389,8 @@
 				985F5DFB2D2B77380097EFCB /* Assets.xcassets in Resources */,
 				985F5DFD2D2B77380097EFCB /* LaunchScreen.storyboard in Resources */,
 				985F5DFE2D2B77380097EFCB /* Main.storyboard in Resources */,
+				985EE8B92EFD436B00B23083 /* novel_load_light.json in Resources */,
+				985EE8BA2EFD436B00B23083 /* novel_load_dark.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,9 +448,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				988B1BB12E01ACB70043C324 /* WGradientCurveLineView.m in Sources */,
+				985EE8B32EFD41B600B23083 /* VNovelRefreshFooter.m in Sources */,
+				985EE8B42EFD41B600B23083 /* VNovelRefreshHeader.m in Sources */,
 				98A506C02E1939E80068A2E9 /* WaterfallItemModel.m in Sources */,
 				982747172D991B6D00F6D2B6 /* StretchableDialogView.m in Sources */,
 				987E6D3A2DD5BEBF001F305A /* BezierTestViewController.m in Sources */,
+				985EE8BF2EFD446800B23083 /* UIScrollView+CustomMJRefresh.m in Sources */,
 				986C73702DA925550073C3C0 /* WyAccountModel.mm in Sources */,
 				98A506C32E193A060068A2E9 /* WaterfallCell.m in Sources */,
 				985F5DFF2D2B77380097EFCB /* AppDelegate.m in Sources */,
@@ -386,6 +461,9 @@
 				985F5E012D2B77380097EFCB /* SceneDelegate.m in Sources */,
 				98D03FD52D2E82F600472D48 /* WyBackgroundReusableView.m in Sources */,
 				987E6D3E2DD5BF0C001F305A /* UILabelTestViewController.m in Sources */,
+				98262A4B2EC5CA54004AAF15 /* SectionPagingFlowLayout.m in Sources */,
+				98262A4C2EC5CA54004AAF15 /* SectionPagingViewController.m in Sources */,
+				98262A4D2EC5CA54004AAF15 /* SectionPagingCollectionView.m in Sources */,
 				98D03FD82D2E8A2700472D48 /* WyCollectionViewCell.m in Sources */,
 				987E6D362DD5BE08001F305A /* GCDTestViewController.m in Sources */,
 				98D03FD12D2E757700472D48 /* WyCollectionReusableView.m in Sources */,

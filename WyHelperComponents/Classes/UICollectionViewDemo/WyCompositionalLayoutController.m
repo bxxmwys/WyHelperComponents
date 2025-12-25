@@ -304,8 +304,10 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
     // 设置 group 的尺寸（宽度为整个宽度，高度为估算）
 #warning oc巨坑，需要使用absoluteDimension，否则会陷入无限循环的计算中，导致崩溃；Swift只要使用.estimated(100)即可正常使用。
-    NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                       heightDimension:[NSCollectionLayoutDimension absoluteDimension:4500]];
+    // 方案2：如果一定要使用绝对高度，可以选择这个（但可能仍有空白）
+     CGFloat waterfallHeight = [self calculateWaterfallTotalHeightWithEdgeInsets:edgeInsets];
+     NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                                                heightDimension:[NSCollectionLayoutDimension absoluteDimension:waterfallHeight]];
 
     // 创建自定义 group（使用 block 实现自定义瀑布流布局）
     NSCollectionLayoutGroupCustomItemProvider handler = ^NSArray<NSCollectionLayoutGroupCustomItem *> * _Nonnull(id<NSCollectionLayoutEnvironment>  _Nonnull environment) {
@@ -372,6 +374,108 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
     // 返回 section
     return [NSCollectionLayoutSection sectionWithGroup:group];
+}
+
+- (CGFloat)estimateWaterfallHeight {
+    if (!self.items || self.items.count == 0) {
+        return 100; // 最小高度
+    }
+
+    // 获取列数，默认为 2
+    NSInteger numberOfColumn = 2;
+
+    // 方法1：基于统计的智能预估
+    // 计算高度的统计信息
+    CGFloat minHeight = CGFLOAT_MAX;
+    CGFloat maxHeight = 0;
+    CGFloat totalHeight = 0;
+
+    for (WaterfallItemModel *model in self.items) {
+        totalHeight += model.height;
+        minHeight = MIN(minHeight, model.height);
+        maxHeight = MAX(maxHeight, model.height);
+    }
+
+    CGFloat averageHeight = totalHeight / self.items.count;
+
+    // 使用更智能的预估算法：
+    // 考虑瀑布流的特性，最优情况下高度接近 总高度/列数
+    // 但由于瀑布流的不均匀分布，实际高度会略高
+    CGFloat optimalHeight = totalHeight / numberOfColumn;
+
+    // 考虑标准差的影响（简单估算）
+    CGFloat heightVariance = (maxHeight - minHeight) / 2.0;
+    CGFloat adjustmentFactor = 1.0 + (heightVariance / averageHeight) * 0.3;
+
+    // 最终预估高度
+    CGFloat estimatedHeight = optimalHeight * adjustmentFactor;
+
+    // 边界控制
+    CGFloat minEstimatedHeight = MAX(averageHeight * 2, 200); // 至少两行
+    CGFloat maxEstimatedHeight = MIN(totalHeight * 0.8, 8000); // 最多占总高度的80%
+
+    estimatedHeight = MAX(minEstimatedHeight, MIN(estimatedHeight, maxEstimatedHeight));
+
+    return estimatedHeight;
+
+    /* 方法2：更保守的预估（如果上面的方法不准确，可以用这个）
+    // 简单平均法：总高度除以列数，再乘以1.2作为缓冲
+    return MAX(totalHeight / numberOfColumn * 1.2, 300);
+    */
+
+    /* 方法3：基于item数量的经验公式
+    // 经验值：每个item平均高度150，考虑2列和间距
+    return MAX(self.items.count * 75 * 1.3, 400);
+    */
+}
+
+- (CGFloat)calculateWaterfallTotalHeightWithEdgeInsets:(NSDirectionalEdgeInsets)edgeInsets {
+    if (!self.items || self.items.count == 0) {
+        return 0;
+    }
+
+    // 获取列数，默认为 2
+    NSInteger numberOfColumn = 2;
+
+    // 获取列间距，默认为 10
+    CGFloat space = 10;
+
+    // 初始化每一列的当前高度
+    NSMutableArray<NSNumber *> *columnHeights = [NSMutableArray array];
+    for (NSInteger i = 0; i < numberOfColumn; i++) {
+        [columnHeights addObject:@(0)];
+    }
+
+    // 模拟瀑布流布局，计算每一列的高度
+    for (WaterfallItemModel *model in self.items) {
+        // 找到当前最短的列
+        NSInteger targetColumn = 0;
+        for (NSInteger x = 1; x < numberOfColumn; x++) {
+            if ([columnHeights[x] floatValue] < [columnHeights[targetColumn] floatValue]) {
+                targetColumn = x;
+            }
+        }
+
+        // 获取当前列的Y偏移
+        CGFloat currentY = [columnHeights[targetColumn] floatValue];
+
+        // 计算间距（第一行不需要顶部间距）
+        CGFloat spacing = (currentY == 0) ? 0 : space;
+
+        // 更新当前列的高度
+        columnHeights[targetColumn] = @(currentY + spacing + model.height);
+    }
+
+    // 找到所有列中的最大高度
+    CGFloat maxHeight = 0;
+    for (NSNumber *height in columnHeights) {
+        if (height.floatValue > maxHeight) {
+            maxHeight = height.floatValue;
+        }
+    }
+
+    // 返回总高度（加上上下边距）
+    return maxHeight + edgeInsets.top + edgeInsets.bottom;
 }
 
 - (NSCollectionLayoutSection *)waterfallSectionWithColumns:(NSInteger)columns {

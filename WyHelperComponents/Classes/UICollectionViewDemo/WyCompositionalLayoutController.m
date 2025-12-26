@@ -59,7 +59,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
 - (void)reloadListViewData {
     
-    NSArray *sections = @[kWyWaterfallSection];//, kWyRankSection, kWyHorSection, kWyVerSection
+    NSArray *sections = @[kWyRankSection, kWyHorSection, kWyVerSection, kWyWaterfallSection];//
     
    // Step 1: Prepare data
    NSMutableArray *heights = [NSMutableArray array];
@@ -238,13 +238,16 @@ static NSString *const kWyTagSection = @"WyTagSection";
     NSInteger numberOfColumns = 2;
     CGFloat space = 10.0;
 
+    // 注意：frames 里已经包含了 edgeInsets，因此 itemWidth 必须从可用宽度中扣掉 leading/trailing；
+    // 同时不要再给 group 额外设置 contentInsets（否则会“双重 inset”，很容易触发 compositional self-sizing 反馈环）。
     CGFloat contentWidth = environment.container.effectiveContentSize.width;
-    CGFloat itemWidth = (contentWidth - (CGFloat)(numberOfColumns - 1) * space) / (CGFloat)numberOfColumns;
+    CGFloat availableWidth = contentWidth - edgeInsets.leading - edgeInsets.trailing;
+    CGFloat itemWidth = (availableWidth - (CGFloat)(numberOfColumns - 1) * space) / (CGFloat)numberOfColumns;
 
     // 预计算 frames 与总高度，避免 OC 下 estimated height 触发反复布局的问题
     NSMutableArray<NSNumber *> *columnHeights = [NSMutableArray arrayWithCapacity:numberOfColumns];
     for (NSInteger i = 0; i < numberOfColumns; i++) {
-        [columnHeights addObject:@(0)];
+        [columnHeights addObject:@(edgeInsets.top)];
     }
 
     NSMutableArray<NSValue *> *frames = [NSMutableArray arrayWithCapacity:self.items.count];
@@ -261,7 +264,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
         WaterfallItemModel *model = [self.items objectAtIndex:i];
         CGFloat itemHeight = model.height;
 
-        CGFloat x = edgeInsets.leading + itemWidth * (CGFloat)targetColumn + space * (CGFloat)targetColumn;
+        CGFloat x = edgeInsets.leading + (itemWidth + space) * (CGFloat)targetColumn;
         CGFloat y = columnHeights[targetColumn].doubleValue;
         CGFloat spacingY = (y == edgeInsets.top) ? 0 : space;
 
@@ -284,8 +287,6 @@ static NSString *const kWyTagSection = @"WyTagSection";
         }
         return items;
     }];
-
-    group.contentInsets = edgeInsets;
 
     return [NSCollectionLayoutSection sectionWithGroup:group];
 }
@@ -327,11 +328,26 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
 - (void)setupDiffableDataSource {
     if (@available(iOS 14.0, *)) {
-        UICollectionViewCellRegistration *normalRegistration = [UICollectionViewCellRegistration registrationWithCellClass:[WyCollectionViewCell class] configurationHandler:^(UICollectionViewCell  * _Nonnull cell, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
+        UICollectionViewCellRegistration *normalRegistration = [UICollectionViewCellRegistration registrationWithCellClass:WyCollectionViewCell.class configurationHandler:^(__kindof WyCollectionViewCell * _Nonnull cell, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
             cell.backgroundColor = UIColor.systemPinkColor;
+            cell.titleLabel.text = item;
+        }];
+
+        // 瀑布流使用非 self-sizing 的 cell（frame/autoresizing），避免 estimated group height 触发反馈环
+        UICollectionViewCellRegistration *waterfallRegistration = [UICollectionViewCellRegistration registrationWithCellClass:WaterfallCell.class configurationHandler:^(__kindof WaterfallCell * _Nonnull cell, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
+            [cell configureWithText:item];
         }];
         
+        @weakify(self)
         self.dataSource = [[VERDataSource alloc] initWithCollectionView:self.listView cellProvider:^UICollectionViewCell * _Nullable(UICollectionView * _Nonnull collectionView, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
+            @strongify(self)
+            if (!self) { return nil; }
+
+            // 根据 sectionIdentifier 选择 cell 类型
+            NSString *sectionIdentifier = [self.dataSource snapshot].sectionIdentifiers[indexPath.section];
+            if ([sectionIdentifier isEqualToString:kWyWaterfallSection]) {
+                return [collectionView dequeueConfiguredReusableCellWithRegistration:waterfallRegistration forIndexPath:indexPath item:item];
+            }
             return [collectionView dequeueConfiguredReusableCellWithRegistration:normalRegistration forIndexPath:indexPath item:item];
         }];
     }
@@ -340,6 +356,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
 - (void)setupFallbackDataSourceForiOS13 {
     // 兼容iOS 13的实现（手动管理数据源）
     [self.listView registerClass:[WyCollectionViewCell class] forCellWithReuseIdentifier:NSStringFromClass([WyCollectionViewCell class])];
+    [self.listView registerClass:WaterfallCell.class forCellWithReuseIdentifier:NSStringFromClass(WaterfallCell.class)];
 //    [self.listView registerClass:[VEarnRewardBannerCell class] forCellWithReuseIdentifier:NSStringFromClass([VEarnRewardBannerCell class])];
 //    [self.listView registerClass:[VEarnRewardTaskCell class] forCellWithReuseIdentifier:NSStringFromClass([VEarnRewardTaskCell class])];
 //    [self.listView registerClass:[VEarnRewardAppListCell class] forCellWithReuseIdentifier:NSStringFromClass([VEarnRewardAppListCell class])];
@@ -348,9 +365,17 @@ static NSString *const kWyTagSection = @"WyTagSection";
 //    [self.listView registerClass:[VEarnRewardWatchShortsCell class] forCellWithReuseIdentifier:NSStringFromClass([VEarnRewardWatchShortsCell class])];
     
     self.dataSource = [[VERDataSource alloc] initWithCollectionView:self.listView cellProvider:^UICollectionViewCell * _Nullable(UICollectionView * _Nonnull collectionView, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull itemIdentifier) {
-        WyCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([WyCollectionViewCell class]) forIndexPath:indexPath];
-        cell.titleLabel.text = itemIdentifier;
-        return cell;
+        // iOS 13：根据 sectionIdentifier 选择 cell 类型
+        NSString *sectionIdentifier = [self.dataSnapshot.sectionIdentifiers objectAtIndex:indexPath.section];
+        if ([sectionIdentifier isEqualToString:kWyWaterfallSection]) {
+            WaterfallCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass(WaterfallCell.class) forIndexPath:indexPath];
+            [cell configureWithText:itemIdentifier];
+            return cell;
+        } else {
+            WyCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([WyCollectionViewCell class]) forIndexPath:indexPath];
+            cell.titleLabel.text = itemIdentifier;
+            return cell;
+        }
     }];
 }
 
@@ -372,23 +397,23 @@ static NSString *const kWyTagSection = @"WyTagSection";
         return nil;
     }];
     
-//    [layout registerClass:WyBackgroundReusableView.class forDecorationViewOfKind:@"background"];
-//    
-//    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21HeaderHeight]];
-//    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:kVEarnRewardV21ElementKindHeader alignment:NSRectAlignmentTop];
-//    header.pinToVisibleBounds = NO;
-//    header.zIndex = -1;
-//    
-//    NSCollectionLayoutSize *footerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21FooterHeight]];
-//    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:footerSize elementKind:kVEarnRewardV21ElementKindFooter alignment:NSRectAlignmentBottom];
-//    footer.pinToVisibleBounds = NO;
-//    footer.zIndex = -1;
-//    
-//    UICollectionViewCompositionalLayoutConfiguration *config = UICollectionViewCompositionalLayoutConfiguration.new;
-//    config.interSectionSpacing = (12);
-//    config.boundarySupplementaryItems = @[header, footer];
-//    
-//    layout.configuration = config;
+    [layout registerClass:WyBackgroundReusableView.class forDecorationViewOfKind:@"background"];
+    
+    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21HeaderHeight]];
+    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:kVEarnRewardV21ElementKindHeader alignment:NSRectAlignmentTop];
+    header.pinToVisibleBounds = NO;
+    header.zIndex = -1;
+    
+    NSCollectionLayoutSize *footerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21FooterHeight]];
+    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:footerSize elementKind:kVEarnRewardV21ElementKindFooter alignment:NSRectAlignmentBottom];
+    footer.pinToVisibleBounds = NO;
+    footer.zIndex = -1;
+    
+    UICollectionViewCompositionalLayoutConfiguration *config = UICollectionViewCompositionalLayoutConfiguration.new;
+    config.interSectionSpacing = (12);
+    config.boundarySupplementaryItems = @[header, footer];
+    
+    layout.configuration = config;
     
     return layout;
 }

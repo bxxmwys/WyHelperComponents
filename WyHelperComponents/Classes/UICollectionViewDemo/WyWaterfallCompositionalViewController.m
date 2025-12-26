@@ -162,13 +162,15 @@ static NSString *const kWyWaterfallCellReuseId = @"kWyWaterfallCellReuseId";
     NSInteger numberOfColumns = 2;
     CGFloat space = 10.0;
 
+    // frames 里包含了 edgeInsets，因此 itemWidth 必须扣掉 leading/trailing；避免“双重 inset”导致 layout 反复修正
     CGFloat contentWidth = environment.container.effectiveContentSize.width;
-    CGFloat itemWidth = (contentWidth - (CGFloat)(numberOfColumns - 1) * space) / (CGFloat)numberOfColumns;
+    CGFloat availableWidth = contentWidth - edgeInsets.leading - edgeInsets.trailing;
+    CGFloat itemWidth = (availableWidth - (CGFloat)(numberOfColumns - 1) * space) / (CGFloat)numberOfColumns;
 
     // 预计算 frames 与总高度，避免 OC 下 estimated height 触发反复布局的问题
     NSMutableArray<NSNumber *> *columnHeights = [NSMutableArray arrayWithCapacity:numberOfColumns];
     for (NSInteger i = 0; i < numberOfColumns; i++) {
-        [columnHeights addObject:@(0)];
+        [columnHeights addObject:@(edgeInsets.top)];
     }
 
     NSMutableArray<NSValue *> *frames = [NSMutableArray arrayWithCapacity:self.items.count];
@@ -188,7 +190,7 @@ static NSString *const kWyWaterfallCellReuseId = @"kWyWaterfallCellReuseId";
         }
         CGFloat itemHeight = itemWidth * aspect;
 
-        CGFloat x = edgeInsets.leading + itemWidth * (CGFloat)targetColumn + space * (CGFloat)targetColumn;
+        CGFloat x = edgeInsets.leading + (itemWidth + space) * (CGFloat)targetColumn;
         CGFloat y = columnHeights[targetColumn].doubleValue;
         CGFloat spacingY = (y == edgeInsets.top) ? 0 : space;
 
@@ -211,8 +213,6 @@ static NSString *const kWyWaterfallCellReuseId = @"kWyWaterfallCellReuseId";
         }
         return items;
     }];
-
-    group.contentInsets = edgeInsets;
 
     return [NSCollectionLayoutSection sectionWithGroup:group];
 }

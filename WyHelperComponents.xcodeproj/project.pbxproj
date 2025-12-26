@@ -12,6 +12,7 @@
 		98262A4C2EC5CA54004AAF15 /* SectionPagingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 98262A4A2EC5CA54004AAF15 /* SectionPagingViewController.m */; };
 		98262A4D2EC5CA54004AAF15 /* SectionPagingCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98262A462EC5CA54004AAF15 /* SectionPagingCollectionView.m */; };
 		982747172D991B6D00F6D2B6 /* StretchableDialogView.m in Sources */ = {isa = PBXBuildFile; fileRef = 982747162D991B6D00F6D2B6 /* StretchableDialogView.m */; };
+		9848A3ED2EFE6011007AECE9 /* WyWaterfallCompositionalViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9848A3EC2EFE6011007AECE9 /* WyWaterfallCompositionalViewController.m */; };
 		985EE8B32EFD41B600B23083 /* VNovelRefreshFooter.m in Sources */ = {isa = PBXBuildFile; fileRef = 985EE8B02EFD41B600B23083 /* VNovelRefreshFooter.m */; };
 		985EE8B42EFD41B600B23083 /* VNovelRefreshHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 985EE8B22EFD41B600B23083 /* VNovelRefreshHeader.m */; };
 		985EE8B92EFD436B00B23083 /* novel_load_light.json in Resources */ = {isa = PBXBuildFile; fileRef = 985EE8B82EFD436B00B23083 /* novel_load_light.json */; };
@@ -50,6 +51,8 @@
 		982747152D991B6D00F6D2B6 /* StretchableDialogView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StretchableDialogView.h; sourceTree = "<group>"; };
 		982747162D991B6D00F6D2B6 /* StretchableDialogView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StretchableDialogView.m; sourceTree = "<group>"; };
 		98336AEC2D27E5B0002AC3DE /* WyHelperComponents.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WyHelperComponents.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9848A3EB2EFE6011007AECE9 /* WyWaterfallCompositionalViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyWaterfallCompositionalViewController.h; sourceTree = "<group>"; };
+		9848A3EC2EFE6011007AECE9 /* WyWaterfallCompositionalViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyWaterfallCompositionalViewController.m; sourceTree = "<group>"; };
 		985EE8AF2EFD41B600B23083 /* VNovelRefreshFooter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VNovelRefreshFooter.h; sourceTree = "<group>"; };
 		985EE8B02EFD41B600B23083 /* VNovelRefreshFooter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VNovelRefreshFooter.m; sourceTree = "<group>"; };
 		985EE8B12EFD41B600B23083 /* VNovelRefreshHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VNovelRefreshHeader.h; sourceTree = "<group>"; };
@@ -248,6 +251,8 @@
 				98D03FD42D2E82F600472D48 /* WyBackgroundReusableView.m */,
 				985F5E0D2D2BBF9A0097EFCB /* WyCompositionalLayoutController.h */,
 				985F5E0E2D2BBF9A0097EFCB /* WyCompositionalLayoutController.m */,
+				9848A3EB2EFE6011007AECE9 /* WyWaterfallCompositionalViewController.h */,
+				9848A3EC2EFE6011007AECE9 /* WyWaterfallCompositionalViewController.m */,
 				98A506BE2E1939E80068A2E9 /* WaterfallItemModel.h */,
 				98A506BF2E1939E80068A2E9 /* WaterfallItemModel.m */,
 				98A506C12E193A060068A2E9 /* WaterfallCell.h */,
@@ -452,6 +457,7 @@
 				985EE8B42EFD41B600B23083 /* VNovelRefreshHeader.m in Sources */,
 				98A506C02E1939E80068A2E9 /* WaterfallItemModel.m in Sources */,
 				982747172D991B6D00F6D2B6 /* StretchableDialogView.m in Sources */,
+				9848A3ED2EFE6011007AECE9 /* WyWaterfallCompositionalViewController.m in Sources */,
 				987E6D3A2DD5BEBF001F305A /* BezierTestViewController.m in Sources */,
 				985EE8BF2EFD446800B23083 /* UIScrollView+CustomMJRefresh.m in Sources */,
 				986C73702DA925550073C3C0 /* WyAccountModel.mm in Sources */,

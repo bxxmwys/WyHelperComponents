@@ -59,17 +59,17 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
 - (void)reloadListViewData {
     
-    NSArray *sections = @[kWyRankSection, kWyHorSection, kWyVerSection, kWyWaterfallSection];
+    NSArray *sections = @[kWyWaterfallSection];//, kWyRankSection, kWyHorSection, kWyVerSection
     
-    CGFloat spacing = 16;
-    CGFloat width = UIScreen.mainScreen.bounds.size.width - spacing * 2;
-
    // Step 1: Prepare data
    NSMutableArray *heights = [NSMutableArray array];
    for (NSInteger i = 0; i < 50; i++) {
-       [heights addObject:@(arc4random_uniform(100) + 100)]; // Height: 100 ~ 199
+       WaterfallItemModel *model = [WaterfallItemModel new];
+       model.identifier = [NSString stringWithFormat:@"Item %ld", (long)i+1];
+       model.height = arc4random_uniform(100) + 100;
+       [heights addObject:model];
    }
-   self.items = [self generateWaterfallItemsFromHeights:heights containerWidth:width spacing:10];
+   self.items = [NSArray arrayWithArray:heights];
 
     
     VERDiffableSnapshot *snapshot = [[VERDiffableSnapshot alloc] init];
@@ -81,7 +81,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
         NSMutableArray *items = [NSMutableArray array];
         if ([identifier isEqualToString:kWyWaterfallSection]) {
             for (int i=0; i<self.items.count; i++) {
-                [items addObject:[NSString stringWithFormat:@"%@-%d", identifier, i]];
+                [items addObject:self.items[i].identifier];
             }
         } else {
             NSInteger rand = arc4random()%6 + 6;
@@ -104,9 +104,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
             [snapshot appendItemsWithIdentifiers:items intoSectionWithIdentifier:identifier];
         }
     }
-    
-    self.cellHeights = [NSArray arrayWithArray:waterFallCellHeights];
-    
+        
     // 记录一个，用来更新数据
     self.dataSnapshot = snapshot;
     // 应用快照
@@ -120,28 +118,6 @@ static NSString *const kWyTagSection = @"WyTagSection";
     } else {
         [self.dataSource applySnapshot:snapshot animatingDifferences:NO];
     }
-}
-
-- (NSArray<WaterfallItemModel *> *)generateWaterfallItemsFromHeights:(NSArray<NSNumber *> *)heights containerWidth:(CGFloat)containerWidth spacing:(CGFloat)spacing {
-    CGFloat columnWidth = (containerWidth - spacing) / 2.0;
-    NSMutableArray *columnHeights = [@[@0.0, @0.0] mutableCopy];
-    NSMutableArray *result = [NSMutableArray array];
-
-    for (NSInteger i = 0; i < heights.count; i++) {
-        CGFloat h = heights[i].doubleValue;
-        NSInteger col = [columnHeights[0] doubleValue] <= [columnHeights[1] doubleValue] ? 0 : 1;
-        CGFloat y = [columnHeights[col] doubleValue];
-
-        WaterfallItemModel *model = [WaterfallItemModel new];
-        model.identifier = [NSString stringWithFormat:@"Item %ld\n%.0f pt", (long)i+1, h];
-        model.height = h;
-        model.columnIndex = col;
-        model.yOffset = y;
-
-        columnHeights[col] = @(y + h + spacing);
-        [result addObject:model];
-    }
-    return result;
 }
 
 #pragma mark - Section 样式
@@ -254,290 +230,65 @@ static NSString *const kWyTagSection = @"WyTagSection";
     return section;
 }
 
-- (NSCollectionLayoutSection *)sectionForWaterFall {
-    
-    CGFloat spacing = 10;
-    // 获取列数，默认为 2
-    NSInteger numberOfColumn = 2;
-    
-    // 根据容器宽度和列数计算 item 宽度和高度
-    CGFloat totalSpacing = (numberOfColumn - 1) * spacing;
-    CGFloat columnWidth = (([UIScreen mainScreen].bounds.size.width - 32) - totalSpacing) / numberOfColumn ;
-    
-    
-    NSMutableArray *customItems = [NSMutableArray array];
-    for (WaterfallItemModel *item in self.items) {
-        CGFloat x = item.columnIndex == 0 ? 0 : (columnWidth + spacing);
-        CGRect frame = CGRectMake(x, item.yOffset, columnWidth, item.height);
-        [customItems addObject:[NSCollectionLayoutGroupCustomItem customItemWithFrame:frame]];
-    }
+- (NSCollectionLayoutSection *)generateWaterfallSectionWithEnvironment:(id<NSCollectionLayoutEnvironment>)environment {
+    // Swift 对齐：edgeInsets = (top:0, leading:20, bottom:0, trailing:20)
+    NSDirectionalEdgeInsets edgeInsets = NSDirectionalEdgeInsetsMake(0, 20, 0, 20);
 
-    NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]];
-    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize itemProvider:^NSArray<NSCollectionLayoutGroupCustomItem *> * _Nonnull(id<NSCollectionLayoutEnvironment>  _Nonnull layoutEnvironment) {
-        return customItems;
-    }];
+    // Swift 对齐：2 列、间距 10
+    NSInteger numberOfColumns = 2;
+    CGFloat space = 10.0;
 
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:group];
-    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
-    section.interGroupSpacing = 10;
-    
-    // 3.1 section header
-    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
-    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
-    header.pinToVisibleBounds = NO;
-    
-    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
-    footer.pinToVisibleBounds = NO;
-    section.boundarySupplementaryItems = @[header, footer];
-    
-    return section;
-}
+    CGFloat contentWidth = environment.container.effectiveContentSize.width;
+    CGFloat itemWidth = (contentWidth - (CGFloat)(numberOfColumns - 1) * space) / (CGFloat)numberOfColumns;
 
-- (NSCollectionLayoutSection *)generateWaterfallSection {
-    // collectionView 为 nil 时直接返回 nil
-    if (!self.listView) {
-        return nil;
-    }
-
-    // 设置边距
-    NSDirectionalEdgeInsets edgeInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
-
-    // 设置 group 的尺寸（宽度为整个宽度，高度为估算）
-#warning oc巨坑，需要使用absoluteDimension，否则会陷入无限循环的计算中，导致崩溃；Swift只要使用.estimated(100)即可正常使用。
-    // 方案2：如果一定要使用绝对高度，可以选择这个（但可能仍有空白）
-     CGFloat waterfallHeight = [self calculateWaterfallTotalHeightWithEdgeInsets:edgeInsets];
-     NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                heightDimension:[NSCollectionLayoutDimension absoluteDimension:waterfallHeight]];
-
-    // 创建自定义 group（使用 block 实现自定义瀑布流布局）
-    NSCollectionLayoutGroupCustomItemProvider handler = ^NSArray<NSCollectionLayoutGroupCustomItem *> * _Nonnull(id<NSCollectionLayoutEnvironment>  _Nonnull environment) {
-        NSMutableArray<NSCollectionLayoutGroupCustomItem *> *items = [NSMutableArray array];
-
-        // 获取列间距，默认为 1.0
-        CGFloat space = 10;
-
-        // 获取列数，默认为 2
-        NSInteger numberOfColumn = 2;
-
-        // 初始化每一列的当前高度
-        NSMutableDictionary<NSNumber *, NSNumber *> *layouts = [NSMutableDictionary dictionary];
-        for (NSInteger i = 0; i < numberOfColumn; i++) {
-            layouts[@(i)] = @(0);
-        }
-
-        NSInteger targetColumn = 0;
-
-        NSInteger itemCount = self.items.count;
-        for (NSInteger i = 0; i < itemCount; i++) {
-            targetColumn = 0;
-
-            // 找出当前最短的列
-            for (NSInteger x = 0; x < numberOfColumn; x++) {
-                if ([layouts[@(x)] floatValue] < [layouts[@(targetColumn)] floatValue]) {
-                    targetColumn = x;
-                }
-            }
-
-//            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:i inSection:section];
-
-            // 获取 item 的尺寸
-            WaterfallItemModel *model = [self.items objectAtIndex:i];
-            CGFloat height = model.height;
-
-            // 根据容器宽度和列数计算 item 宽度和高度
-            CGFloat totalSpacing = (numberOfColumn - 1) * space;
-            CGFloat width = (environment.container.effectiveContentSize.width - totalSpacing) / numberOfColumn;
-            
-
-            CGFloat x = edgeInsets.leading + width * targetColumn + space * targetColumn;
-            CGFloat y = [layouts[@(targetColumn)] floatValue];
-
-            NSLog(@"~~~~~~provider:(%.2f, %.2f)", x, y);
-
-            CGFloat spacing = (y == edgeInsets.top) ? 0 : space;
-            CGRect frame = CGRectMake(x, y + spacing, width, height);
-
-            // 创建自定义 item
-            NSCollectionLayoutGroupCustomItem *item = [NSCollectionLayoutGroupCustomItem customItemWithFrame:frame];
-            [items addObject:item];
-
-            // 更新当前列的高度
-            layouts[@(targetColumn)] = @(y + spacing + height);
-        }
-
-        return items;
-    };
-
-    // 创建 group
-    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize itemProvider:handler];
-    group.contentInsets = edgeInsets;
-
-    // 返回 section
-    return [NSCollectionLayoutSection sectionWithGroup:group];
-}
-
-- (CGFloat)estimateWaterfallHeight {
-    if (!self.items || self.items.count == 0) {
-        return 100; // 最小高度
-    }
-
-    // 获取列数，默认为 2
-    NSInteger numberOfColumn = 2;
-
-    // 方法1：基于统计的智能预估
-    // 计算高度的统计信息
-    CGFloat minHeight = CGFLOAT_MAX;
-    CGFloat maxHeight = 0;
-    CGFloat totalHeight = 0;
-
-    for (WaterfallItemModel *model in self.items) {
-        totalHeight += model.height;
-        minHeight = MIN(minHeight, model.height);
-        maxHeight = MAX(maxHeight, model.height);
-    }
-
-    CGFloat averageHeight = totalHeight / self.items.count;
-
-    // 使用更智能的预估算法：
-    // 考虑瀑布流的特性，最优情况下高度接近 总高度/列数
-    // 但由于瀑布流的不均匀分布，实际高度会略高
-    CGFloat optimalHeight = totalHeight / numberOfColumn;
-
-    // 考虑标准差的影响（简单估算）
-    CGFloat heightVariance = (maxHeight - minHeight) / 2.0;
-    CGFloat adjustmentFactor = 1.0 + (heightVariance / averageHeight) * 0.3;
-
-    // 最终预估高度
-    CGFloat estimatedHeight = optimalHeight * adjustmentFactor;
-
-    // 边界控制
-    CGFloat minEstimatedHeight = MAX(averageHeight * 2, 200); // 至少两行
-    CGFloat maxEstimatedHeight = MIN(totalHeight * 0.8, 8000); // 最多占总高度的80%
-
-    estimatedHeight = MAX(minEstimatedHeight, MIN(estimatedHeight, maxEstimatedHeight));
-
-    return estimatedHeight;
-
-    /* 方法2：更保守的预估（如果上面的方法不准确，可以用这个）
-    // 简单平均法：总高度除以列数，再乘以1.2作为缓冲
-    return MAX(totalHeight / numberOfColumn * 1.2, 300);
-    */
-
-    /* 方法3：基于item数量的经验公式
-    // 经验值：每个item平均高度150，考虑2列和间距
-    return MAX(self.items.count * 75 * 1.3, 400);
-    */
-}
-
-- (CGFloat)calculateWaterfallTotalHeightWithEdgeInsets:(NSDirectionalEdgeInsets)edgeInsets {
-    if (!self.items || self.items.count == 0) {
-        return 0;
-    }
-
-    // 获取列数，默认为 2
-    NSInteger numberOfColumn = 2;
-
-    // 获取列间距，默认为 10
-    CGFloat space = 10;
-
-    // 初始化每一列的当前高度
-    NSMutableArray<NSNumber *> *columnHeights = [NSMutableArray array];
-    for (NSInteger i = 0; i < numberOfColumn; i++) {
+    // 预计算 frames 与总高度，避免 OC 下 estimated height 触发反复布局的问题
+    NSMutableArray<NSNumber *> *columnHeights = [NSMutableArray arrayWithCapacity:numberOfColumns];
+    for (NSInteger i = 0; i < numberOfColumns; i++) {
         [columnHeights addObject:@(0)];
     }
 
-    // 模拟瀑布流布局，计算每一列的高度
-    for (WaterfallItemModel *model in self.items) {
-        // 找到当前最短的列
-        NSInteger targetColumn = 0;
-        for (NSInteger x = 1; x < numberOfColumn; x++) {
-            if ([columnHeights[x] floatValue] < [columnHeights[targetColumn] floatValue]) {
-                targetColumn = x;
-            }
-        }
-
-        // 获取当前列的Y偏移
-        CGFloat currentY = [columnHeights[targetColumn] floatValue];
-
-        // 计算间距（第一行不需要顶部间距）
-        CGFloat spacing = (currentY == 0) ? 0 : space;
-
-        // 更新当前列的高度
-        columnHeights[targetColumn] = @(currentY + spacing + model.height);
-    }
-
-    // 找到所有列中的最大高度
+    NSMutableArray<NSValue *> *frames = [NSMutableArray arrayWithCapacity:self.items.count];
     CGFloat maxHeight = 0;
-    for (NSNumber *height in columnHeights) {
-        if (height.floatValue > maxHeight) {
-            maxHeight = height.floatValue;
+
+    for (NSInteger i = 0; i < self.items.count; i++) {
+        NSInteger targetColumn = 0;
+        for (NSInteger c = 0; c < numberOfColumns; c++) {
+            if (columnHeights[c].doubleValue < columnHeights[targetColumn].doubleValue) {
+                targetColumn = c;
+            }
         }
+
+        WaterfallItemModel *model = [self.items objectAtIndex:i];
+        CGFloat itemHeight = model.height;
+
+        CGFloat x = edgeInsets.leading + itemWidth * (CGFloat)targetColumn + space * (CGFloat)targetColumn;
+        CGFloat y = columnHeights[targetColumn].doubleValue;
+        CGFloat spacingY = (y == edgeInsets.top) ? 0 : space;
+
+        CGRect frame = CGRectMake(x, y + spacingY, itemWidth, itemHeight);
+        [frames addObject:[NSValue valueWithCGRect:frame]];
+
+        CGFloat newHeight = y + spacingY + itemHeight;
+        columnHeights[targetColumn] = @(newHeight);
+        maxHeight = MAX(maxHeight, newHeight);
     }
 
-    // 返回总高度（加上上下边距）
-    return maxHeight + edgeInsets.top + edgeInsets.bottom;
-}
-
-- (NSCollectionLayoutSection *)waterfallSectionWithColumns:(NSInteger)columns {
-    // 1️⃣ 定义 item（宽度固定，高度自适应）
-    CGFloat fractionalWidth = 1.0 / columns;
-
-    // 2️⃣ 使用 custom group 实现瀑布流
     NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                    heightDimension:[NSCollectionLayoutDimension estimatedDimension:200]];
-    
-    @weakify(self)
-    NSCollectionLayoutGroupCustomItemProvider provider = ^NSArray<NSCollectionLayoutGroupCustomItem *> * (id<NSCollectionLayoutEnvironment> environment) {
-        NSMutableArray<NSCollectionLayoutGroupCustomItem *> *items = [NSMutableArray array];
+                                                                       heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]];
 
-        // 记录每一列的当前高度
-        CGFloat columnHeights[columns];
-        for (NSInteger i = 0; i < columns; i++) {
-            columnHeights[i] = 0;
+    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize
+                                                                          itemProvider:^NSArray<NSCollectionLayoutGroupCustomItem *> * _Nonnull(id<NSCollectionLayoutEnvironment>  _Nonnull layoutEnvironment) {
+        NSMutableArray<NSCollectionLayoutGroupCustomItem *> *items = [NSMutableArray arrayWithCapacity:frames.count];
+        for (NSValue *value in frames) {
+            [items addObject:[NSCollectionLayoutGroupCustomItem customItemWithFrame:value.CGRectValue]];
         }
+        return items;
+    }];
 
-        @strongify(self)
-        NSInteger totalItems = self.cellHeights.count;
-        for (NSInteger i = 0; i < totalItems; i++) {
-            // 找到当前最短的列
-            NSInteger targetColumn = 0;
-            for (NSInteger j = 1; j < columns; j++) {
-                if (columnHeights[j] < columnHeights[targetColumn]) {
-                    targetColumn = j;
-                }
-            }
+    group.contentInsets = edgeInsets;
 
-            // 计算 item 的 x、y 位置
-            CGFloat x = targetColumn * (98);
-            CGFloat y = columnHeights[targetColumn];
-            
-            NSLog(@"~~~~~~provider:%ld:(%.2f, %.2f)", i, x, y);
-
-            // 假设 cell 高度是 100~300 随机
-            CGFloat itemHeight = [[self.cellHeights objectAtIndex:i] floatValue];
-
-            // 创建 item
-            NSCollectionLayoutGroupCustomItem *customItem = [NSCollectionLayoutGroupCustomItem customItemWithFrame:CGRectMake(x, y, 98, itemHeight)];
-            [items addObject:customItem];
-
-            // 更新当前列的高度
-            columnHeights[targetColumn] += itemHeight + 10; // 10 是 cell 间距
-        }
-
-        return items.copy;
-    };
-
-    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize itemProvider:provider];
-
-    // 3️⃣ 创建 section
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:group];
-    section.contentInsets = NSDirectionalEdgeInsetsMake(10, 10, 10, 10);
-
-    return section;
+    return [NSCollectionLayoutSection sectionWithGroup:group];
 }
-
-
-
 
 #pragma mark - UICollectionViewDiffableDataSource
 
@@ -576,13 +327,12 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
 - (void)setupDiffableDataSource {
     if (@available(iOS 14.0, *)) {
-        
-        UICollectionViewCellRegistration *cellRegistration = [UICollectionViewCellRegistration registrationWithCellClass:[WyCollectionViewCell class] configurationHandler:^(__kindof WyCollectionViewCell * _Nonnull cell, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
-            cell.titleLabel.text = item;
+        UICollectionViewCellRegistration *normalRegistration = [UICollectionViewCellRegistration registrationWithCellClass:[WyCollectionViewCell class] configurationHandler:^(UICollectionViewCell  * _Nonnull cell, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
+            cell.backgroundColor = UIColor.systemPinkColor;
         }];
         
         self.dataSource = [[VERDataSource alloc] initWithCollectionView:self.listView cellProvider:^UICollectionViewCell * _Nullable(UICollectionView * _Nonnull collectionView, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
-            return [collectionView dequeueConfiguredReusableCellWithRegistration:cellRegistration forIndexPath:indexPath item:item];
+            return [collectionView dequeueConfiguredReusableCellWithRegistration:normalRegistration forIndexPath:indexPath item:item];
         }];
     }
 }
@@ -617,28 +367,28 @@ static NSString *const kWyTagSection = @"WyTagSection";
         } else if ([sectionIdentifier isEqualToString:kWyHorSection]) {
             return [self sectionForHorizontal];
         } else if ([sectionIdentifier isEqualToString:kWyWaterfallSection]) {
-            return [self generateWaterfallSection];
+            return [self generateWaterfallSectionWithEnvironment:layoutEnvironment];
         }
         return nil;
     }];
     
-    [layout registerClass:WyBackgroundReusableView.class forDecorationViewOfKind:@"background"];
-    
-    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21HeaderHeight]];
-    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:kVEarnRewardV21ElementKindHeader alignment:NSRectAlignmentTop];
-    header.pinToVisibleBounds = NO;
-    header.zIndex = -1;
-    
-    NSCollectionLayoutSize *footerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21FooterHeight]];
-    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:footerSize elementKind:kVEarnRewardV21ElementKindFooter alignment:NSRectAlignmentBottom];
-    footer.pinToVisibleBounds = NO;
-    footer.zIndex = -1;
-    
-    UICollectionViewCompositionalLayoutConfiguration *config = UICollectionViewCompositionalLayoutConfiguration.new;
-    config.interSectionSpacing = (12);
-    config.boundarySupplementaryItems = @[header, footer];
-    
-    layout.configuration = config;
+//    [layout registerClass:WyBackgroundReusableView.class forDecorationViewOfKind:@"background"];
+//    
+//    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21HeaderHeight]];
+//    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:kVEarnRewardV21ElementKindHeader alignment:NSRectAlignmentTop];
+//    header.pinToVisibleBounds = NO;
+//    header.zIndex = -1;
+//    
+//    NSCollectionLayoutSize *footerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21FooterHeight]];
+//    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:footerSize elementKind:kVEarnRewardV21ElementKindFooter alignment:NSRectAlignmentBottom];
+//    footer.pinToVisibleBounds = NO;
+//    footer.zIndex = -1;
+//    
+//    UICollectionViewCompositionalLayoutConfiguration *config = UICollectionViewCompositionalLayoutConfiguration.new;
+//    config.interSectionSpacing = (12);
+//    config.boundarySupplementaryItems = @[header, footer];
+//    
+//    layout.configuration = config;
     
     return layout;
 }

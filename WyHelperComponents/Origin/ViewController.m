@@ -7,6 +7,7 @@
 
 #import "ViewController.h"
 #import "WyCompositionalLayoutController.h"
+#import "WyWaterfallCompositionalViewController.h"
 
 
 @interface ViewController ()<UITableViewDelegate, UITableViewDataSource>
@@ -25,6 +26,7 @@
     
     self.dataSourceDictionary = @{
         @"CompositionalLayout":@"WyCompositionalLayoutController",
+        @"Waterfall(OC)":@"WyWaterfallCompositionalViewController",
         @"GCD":@"GCDTestViewController",
         @"Bezier":@"BezierTestViewController",
         @"UILael":@"UILabelTestViewController",

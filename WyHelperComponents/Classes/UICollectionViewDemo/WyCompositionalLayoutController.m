@@ -11,6 +11,7 @@
 #import "WyCollectionViewCell.h"
 #import "WaterfallItemModel.h"
 #import "WaterfallCell.h"
+#import <QMUIKit/UIColor+QMUI.h>
 
 typedef UICollectionViewDiffableDataSource<NSString *, NSString *> VERDataSource;
 typedef NSDiffableDataSourceSnapshot<NSString *, NSString *> VERDiffableSnapshot;
@@ -45,6 +46,8 @@ static NSString *const kWyTagSection = @"WyTagSection";
     [self setupView];
     // 配置单元类型
     [self configureDataSource];
+    // 配置头尾视图
+    [self setupHeaderAndFooter];
     // 伪造数据
     [self reloadListViewData];
 }
@@ -137,20 +140,16 @@ static NSString *const kWyTagSection = @"WyTagSection";
     verticalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:3.5];
     
 
-
-    // 4. 创建水平滚动的 Group，每一行包含多个竖向排列的列
-    NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
-                                                [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:213]
-                                                                               heightDimension:[NSCollectionLayoutDimension estimatedDimension:330]]
-                                                                                              subitem:verticalGroup count:1];
-    // 6. 创建 Section
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:horizontalGroup];
-    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 使其支持水平滚动
+    // 4. 创建 Section
+    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:verticalGroup];
+    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 按Group分页
+    // Section内部inset
     section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+    // Group与Group之间的间距
     section.interGroupSpacing = 10;
     
-    // 3.1 section header
-    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+    // 5 section header
+    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]];
     NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
     header.pinToVisibleBounds = NO;
     
@@ -167,26 +166,23 @@ static NSString *const kWyTagSection = @"WyTagSection";
                                     [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:0.33]
                                                                    heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]];  // 设定单元格的高度为 100
 
-    // 2. 创建竖向排列的 Group，每列最多 3 行
+    // 2. 创建水平Group，每行限制3个；
     NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
                                               [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
                                                                              heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]
                                                                                           subitem:item count:3];
-    // 上下cell间距
+    // cell间距
     horizontalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:10];
     
+    // group的inset
+    horizontalGroup.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+    
 
-
-    // 4. 创建水平滚动的 Group，每一行包含多个竖向排列的列
-    NSCollectionLayoutGroup *verticalGroup = [NSCollectionLayoutGroup verticalGroupWithLayoutSize:
-                                               [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                              heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]
-                                                                                           subitem:horizontalGroup count:1];
                                                                                               
     // 6. 创建 Section
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:verticalGroup];
+    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:horizontalGroup];
 //    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 使其支持水平滚动
-    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+//    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
     section.interGroupSpacing = 10;
     
     // 3.1 section header
@@ -295,12 +291,15 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
 - (void)configureDataSource {
     [self setupDiffableDataSource];
-    
+}
+
+- (void)setupHeaderAndFooter {
     @weakify(self)
     [self.dataSource setSupplementaryViewProvider:^UICollectionReusableView * _Nullable(UICollectionView * _Nonnull collectionView, NSString * _Nonnull elementKind, NSIndexPath * _Nonnull indexPath) {
         @strongify(self)
         if ([elementKind isEqualToString:UICollectionElementKindSectionHeader]) {
             WyCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:elementKind withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class]) forIndexPath:indexPath];
+            header.backgroundColor = [UIColor qmui_randomColor];
             NSString *sectionIdentify = [self.dataSnapshot.sectionIdentifiers objectAtIndex:indexPath.section];
             if (sectionIdentify) {
                 header.titleLabel.text = [NSString stringWithFormat:@"%@-Header", sectionIdentify];
@@ -308,6 +307,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
             return header;
         } else if ([elementKind isEqualToString:UICollectionElementKindSectionFooter]) {
             WyCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:elementKind withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class]) forIndexPath:indexPath];
+            header.backgroundColor = [UIColor qmui_randomColor];
             NSString *sectionIdentify = [self.dataSnapshot.sectionIdentifiers objectAtIndex:indexPath.section];
             if (sectionIdentify) {
                 header.titleLabel.text = [NSString stringWithFormat:@"%@-Footer", sectionIdentify];
@@ -316,10 +316,12 @@ static NSString *const kWyTagSection = @"WyTagSection";
         } else if ([elementKind isEqualToString:kVEarnRewardV21ElementKindHeader]) {
             WyCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:elementKind withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class]) forIndexPath:indexPath];
             header.titleLabel.text = @"CollectionView-Header";
+            header.backgroundColor = [UIColor qmui_randomColor];
             return header;
         } else if ([elementKind isEqualToString:kVEarnRewardV21ElementKindFooter]) {
             WyCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:elementKind withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class]) forIndexPath:indexPath];
             header.titleLabel.text = @"CollectionView-Footer";
+            header.backgroundColor = [UIColor qmui_randomColor];
             return header;
         }
         return nil;
@@ -385,6 +387,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
         @strongify(self)
         // 获取当前 section 的标识符
         NSString *sectionIdentifier = [self.dataSource snapshot].sectionIdentifiers[sectionIndex];
+        // 根据标识判断Section的样式类型，然后根据类型，初始化不同的Section样式；
         if ([sectionIdentifier isEqualToString:kWyRankSection]) {
             return [self sectionForRankArray];
         } else if ([sectionIdentifier isEqualToString:kWyVerSection]) {
@@ -397,20 +400,25 @@ static NSString *const kWyTagSection = @"WyTagSection";
         return nil;
     }];
     
+    // 注册背景的样式
     [layout registerClass:WyBackgroundReusableView.class forDecorationViewOfKind:@"background"];
     
+    // 初始化layout的Header
     NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21HeaderHeight]];
     NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:kVEarnRewardV21ElementKindHeader alignment:NSRectAlignmentTop];
     header.pinToVisibleBounds = NO;
     header.zIndex = -1;
     
+    // 初始化layout的Footer
     NSCollectionLayoutSize *footerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21FooterHeight]];
     NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:footerSize elementKind:kVEarnRewardV21ElementKindFooter alignment:NSRectAlignmentBottom];
     footer.pinToVisibleBounds = NO;
     footer.zIndex = -1;
     
     UICollectionViewCompositionalLayoutConfiguration *config = UICollectionViewCompositionalLayoutConfiguration.new;
+    // Section与Section之间的间距
     config.interSectionSpacing = (12);
+    // layout整组的header与footer
     config.boundarySupplementaryItems = @[header, footer];
     
     layout.configuration = config;

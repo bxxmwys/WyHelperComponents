@@ -28,6 +28,12 @@ target 'WyHelperComponents' do
 
   #RAC
   pod 'ReactiveObjC', '3.1.1'
+  
+  pod 'QMUIKit/QMUIComponents/QMUIButton',:git => 'https://github.com/bxxmwys/QMUI_iOS.git'
+  pod 'QMUIKit/QMUIComponents/QMUILabel',:git => 'https://github.com/bxxmwys/QMUI_iOS.git'
+  pod 'QMUIKit/QMUIComponents/QMUIPopupMenuView',:git => 'https://github.com/bxxmwys/QMUI_iOS.git'
+  pod 'QMUIKit/QMUIComponents/QMUITextField',:git => 'https://github.com/bxxmwys/QMUI_iOS.git'
+  pod 'QMUIKit/QMUIComponents/QMUITextView',:git => 'https://github.com/bxxmwys/QMUI_iOS.git'
 
 end
 

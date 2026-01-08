@@ -21,6 +21,10 @@ static NSString *const kWyVerSection = @"WyVerticalSection";
 static NSString *const kWyHorSection = @"WyHorizontalSection";
 static NSString *const kWyWaterfallSection = @"WyWaterfallSection";
 static NSString *const kWyTagSection = @"WyTagSection";
+static NSString *const kWyNineGridSection = @"WyNineGridSection";
+
+// 特殊 item 前缀标识（全宽 200 高度）
+static NSString *const kWyVerSpecialItemPrefix = @"__wy_ver_special__";
 
 @interface WyCompositionalLayoutController ()<UICollectionViewDelegate>
 
@@ -55,14 +59,66 @@ static NSString *const kWyTagSection = @"WyTagSection";
 - (void)setupView {
     self.view.backgroundColor = UIColor.whiteColor;
     
+    // 导航栏右侧添加按钮
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"添加" style:UIBarButtonItemStylePlain target:self action:@selector(onTapAdd)];
+    
     [self.listView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.offset(0);
     }];
 }
 
+#pragma mark - Actions
+
+- (void)onTapAdd {
+    // 生成唯一的特殊 item 标识
+    NSString *specialItemId = [NSString stringWithFormat:@"%@%lld", kWyVerSpecialItemPrefix, (long long)([[NSDate date] timeIntervalSince1970] * 1000)];
+    
+    // 从当前 snapshot 拿到可变副本
+    VERDiffableSnapshot *snapshot = [[self.dataSource snapshot] copy];
+    
+    // 获取Section的items
+    NSArray *itemsInNineGridSection = [snapshot itemIdentifiersInSectionWithIdentifier:kWyNineGridSection];
+    
+    NSString *findItemIdentifier = nil;
+    for (int i=3; i<itemsInNineGridSection.count; i+=3) {
+        NSString *item_id = [itemsInNineGridSection objectAtIndex:i];
+        if ([item_id hasPrefix:kWyVerSpecialItemPrefix]) {
+            i++;
+        } else {
+            findItemIdentifier = item_id;
+            break;
+        }
+    }
+    
+    if (findItemIdentifier) {
+        // 向 kWyNineGridSection 插入特殊 item
+        [snapshot insertItemsWithIdentifiers:@[specialItemId] beforeItemWithIdentifier:findItemIdentifier];
+    } else {
+        // 向 kWyNineGridSection 追加特殊 item
+        [snapshot appendItemsWithIdentifiers:@[specialItemId] intoSectionWithIdentifier:kWyNineGridSection];
+    }
+    
+    // 更新缓存
+    self.dataSnapshot = snapshot;
+    
+    // 应用快照（带动画）
+    if (@available(iOS 16.0, *)) {
+        if (@available(iOS 17.0, *)) {
+            [self.dataSource applySnapshot:snapshot animatingDifferences:YES];
+        } else {
+            [self.dataSource applySnapshotUsingReloadData:snapshot];
+        }
+    } else {
+        [self.dataSource applySnapshot:snapshot animatingDifferences:YES];
+    }
+    
+    // 刷新布局（因为 customGroup 需要根据新数据重新计算 frames）
+    [self.listView.collectionViewLayout invalidateLayout];
+}
+
 - (void)reloadListViewData {
     
-    NSArray *sections = @[kWyRankSection, kWyHorSection, kWyVerSection, kWyWaterfallSection];//
+    NSArray *sections = @[kWyRankSection, kWyHorSection, kWyVerSection, kWyNineGridSection, kWyWaterfallSection];//
     
    // Step 1: Prepare data
    NSMutableArray *heights = [NSMutableArray array];
@@ -102,6 +158,13 @@ static NSString *const kWyTagSection = @"WyTagSection";
                 }
             }
         }
+        
+//        // 在 kWyVerSection 的索引 3 插入一次特殊 item（全宽 200）
+//        if ([identifier isEqualToString:kWyVerSection]) {
+//            NSString *specialItemId = [NSString stringWithFormat:@"%@initial_%lld", kWyVerSpecialItemPrefix, (long long)([[NSDate date] timeIntervalSince1970] * 1000)];
+//            NSInteger insertIndex = (items.count >= 3) ? 3 : items.count;
+//            [items insertObject:specialItemId atIndex:insertIndex];
+//        }
         
         if (items.count > 0) {
             [snapshot appendItemsWithIdentifiers:items intoSectionWithIdentifier:identifier];
@@ -169,7 +232,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
     // 2. 创建水平Group，每行限制3个；
     NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
                                               [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                             heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]
+                                                                             heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]
                                                                                           subitem:item count:3];
     // cell间距
     horizontalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:10];
@@ -186,6 +249,93 @@ static NSString *const kWyTagSection = @"WyTagSection";
     section.interGroupSpacing = 10;
     
     // 3.1 section header
+    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
+    header.pinToVisibleBounds = NO;
+    
+    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
+    footer.pinToVisibleBounds = NO;
+    section.boundarySupplementaryItems = @[header, footer];
+    
+    return section;
+}
+
+- (NSCollectionLayoutSection *)sectionForVerticalWithEnvironment:(id<NSCollectionLayoutEnvironment>)environment {
+    // 布局参数
+    CGFloat horizontalInset = 16.0;
+    CGFloat interItemSpacing = 10.0;
+    CGFloat interGroupSpacing = 10.0;
+    NSInteger numberOfColumns = 3;
+    CGFloat normalItemHeight = 100.0;
+    CGFloat specialItemHeight = 200.0;
+    
+    // 计算可用宽度与普通 item 宽度
+    CGFloat contentWidth = environment.container.effectiveContentSize.width;
+    CGFloat availableWidth = contentWidth - horizontalInset * 2;
+    CGFloat normalItemWidth = (availableWidth - (numberOfColumns - 1) * interItemSpacing) / numberOfColumns;
+    
+    // 获取当前 kWyVerSection 的所有 itemIdentifiers
+    NSArray<NSString *> *itemIdentifiers = [[self.dataSource snapshot] itemIdentifiersInSectionWithIdentifier:kWyNineGridSection];
+    
+    // 预计算每个 item 的 frame
+    NSMutableArray<NSValue *> *frames = [NSMutableArray arrayWithCapacity:itemIdentifiers.count];
+    CGFloat currentY = 0;
+    NSInteger currentColumnIndex = 0;
+    
+    for (NSInteger i = 0; i < itemIdentifiers.count; i++) {
+        NSString *itemId = itemIdentifiers[i];
+        BOOL isSpecial = [itemId hasPrefix:kWyVerSpecialItemPrefix];
+        
+        if (isSpecial) {
+            // 特殊 item：全宽，高度 200
+            // 如果当前行有普通 item，先换行
+            if (currentColumnIndex > 0) {
+                currentY += normalItemHeight + interGroupSpacing;
+                currentColumnIndex = 0;
+            }
+            
+            CGRect frame = CGRectMake(0, currentY, contentWidth, specialItemHeight);
+            [frames addObject:[NSValue valueWithCGRect:frame]];
+            
+            currentY += specialItemHeight + interGroupSpacing;
+            currentColumnIndex = 0;
+        } else {
+            // 普通 item：3 列网格
+            CGFloat x = horizontalInset + currentColumnIndex * (normalItemWidth + interItemSpacing);
+            CGRect frame = CGRectMake(x, currentY, normalItemWidth, normalItemHeight);
+            [frames addObject:[NSValue valueWithCGRect:frame]];
+            
+            currentColumnIndex++;
+            if (currentColumnIndex >= numberOfColumns) {
+                currentColumnIndex = 0;
+                currentY += normalItemHeight + interGroupSpacing;
+            }
+        }
+    }
+    
+    // 计算总高度（如果最后一行有未满的普通 item，也要计入）
+    CGFloat totalHeight = currentY;
+    if (currentColumnIndex > 0) {
+        totalHeight += normalItemHeight;
+    }
+    
+    // 创建 customGroup
+    NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                                                       heightDimension:[NSCollectionLayoutDimension absoluteDimension:totalHeight]];
+    
+    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize
+                                                                          itemProvider:^NSArray<NSCollectionLayoutGroupCustomItem *> * _Nonnull(id<NSCollectionLayoutEnvironment>  _Nonnull layoutEnvironment) {
+        NSMutableArray<NSCollectionLayoutGroupCustomItem *> *layoutItems = [NSMutableArray arrayWithCapacity:frames.count];
+        for (NSValue *value in frames) {
+            [layoutItems addObject:[NSCollectionLayoutGroupCustomItem customItemWithFrame:value.CGRectValue]];
+        }
+        return layoutItems;
+    }];
+    
+    // 创建 Section
+    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:group];
+    
+    // section header & footer
     NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
     NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
     header.pinToVisibleBounds = NO;
@@ -330,6 +480,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
 
 - (void)setupDiffableDataSource {
     if (@available(iOS 14.0, *)) {
+        // 普通 cell（粉色背景）
         UICollectionViewCellRegistration *normalRegistration = [UICollectionViewCellRegistration registrationWithCellClass:WyCollectionViewCell.class configurationHandler:^(__kindof WyCollectionViewCell * _Nonnull cell, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
             cell.backgroundColor = UIColor.systemPinkColor;
             cell.titleLabel.text = item;
@@ -338,6 +489,13 @@ static NSString *const kWyTagSection = @"WyTagSection";
         // 瀑布流使用非 self-sizing 的 cell（frame/autoresizing），避免 estimated group height 触发反馈环
         UICollectionViewCellRegistration *waterfallRegistration = [UICollectionViewCellRegistration registrationWithCellClass:WaterfallCell.class configurationHandler:^(__kindof WaterfallCell * _Nonnull cell, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
             [cell configureWithText:item];
+        }];
+        
+        // 特殊 item（全宽 200，蓝色背景，不同文案）
+        UICollectionViewCellRegistration *specialRegistration = [UICollectionViewCellRegistration registrationWithCellClass:WyCollectionViewCell.class configurationHandler:^(__kindof WyCollectionViewCell * _Nonnull cell, NSIndexPath * _Nonnull indexPath, NSString * _Nonnull item) {
+            cell.backgroundColor = UIColor.systemBlueColor;
+            cell.titleLabel.text = @"特殊全宽 Item (200)";
+            cell.titleLabel.textColor = UIColor.whiteColor;
         }];
         
         @weakify(self)
@@ -350,6 +508,16 @@ static NSString *const kWyTagSection = @"WyTagSection";
             if ([sectionIdentifier isEqualToString:kWyWaterfallSection]) {
                 return [collectionView dequeueConfiguredReusableCellWithRegistration:waterfallRegistration forIndexPath:indexPath item:item];
             }
+            
+            // 特殊 item（全宽 200）走蓝色样式
+            if ([item hasPrefix:kWyVerSpecialItemPrefix]) {
+                return [collectionView dequeueConfiguredReusableCellWithRegistration:specialRegistration forIndexPath:indexPath item:item];
+            }
+            
+            if ([sectionIdentifier isEqualToString:kWyNineGridSection]) {
+                return [collectionView dequeueConfiguredReusableCellWithRegistration:waterfallRegistration forIndexPath:indexPath item:item];
+            }
+            
             return [collectionView dequeueConfiguredReusableCellWithRegistration:normalRegistration forIndexPath:indexPath item:item];
         }];
     }
@@ -373,8 +541,16 @@ static NSString *const kWyTagSection = @"WyTagSection";
             WaterfallCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass(WaterfallCell.class) forIndexPath:indexPath];
             [cell configureWithText:itemIdentifier];
             return cell;
+        } else if ([itemIdentifier hasPrefix:kWyVerSpecialItemPrefix]) {
+            // 特殊 item（全宽 200）走蓝色样式
+            WyCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([WyCollectionViewCell class]) forIndexPath:indexPath];
+            cell.backgroundColor = UIColor.systemBlueColor;
+            cell.titleLabel.text = @"特殊全宽 Item (200)";
+            cell.titleLabel.textColor = UIColor.whiteColor;
+            return cell;
         } else {
             WyCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([WyCollectionViewCell class]) forIndexPath:indexPath];
+            cell.backgroundColor = UIColor.systemPinkColor;
             cell.titleLabel.text = itemIdentifier;
             return cell;
         }
@@ -392,6 +568,8 @@ static NSString *const kWyTagSection = @"WyTagSection";
             return [self sectionForRankArray];
         } else if ([sectionIdentifier isEqualToString:kWyVerSection]) {
             return [self sectionForVertical];
+        } else if ([sectionIdentifier isEqualToString:kWyNineGridSection]) {
+            return [self sectionForVerticalWithEnvironment:layoutEnvironment];
         } else if ([sectionIdentifier isEqualToString:kWyHorSection]) {
             return [self sectionForHorizontal];
         } else if ([sectionIdentifier isEqualToString:kWyWaterfallSection]) {

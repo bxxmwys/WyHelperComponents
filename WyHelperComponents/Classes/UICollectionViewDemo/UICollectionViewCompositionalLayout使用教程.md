@@ -156,63 +156,39 @@ layout.configuration = config;
 
 #### 代码实现
 
-```
-
-```
-
-
-
-
-
 ```objc
-- (NSCollectionLayoutSection *)sectionForRankArray {
-    // 1. 创建单元格的布局项 (Item)
-    NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:
+// 1. 创建单元格的布局项 (Item)
+NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:
                                     [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:213]
                                                                    heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]];  // 设定单元格的高度为 100
+```
 
-    // 2. 创建竖向排列的 Group，每列最多 3 行
-    NSCollectionLayoutGroup *verticalGroup = [NSCollectionLayoutGroup verticalGroupWithLayoutSize:
-                                              [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:213]
-                                                                             heightDimension:[NSCollectionLayoutDimension absoluteDimension:307]]
-                                                                                          subitem:item count:3];
-    // 上下cell间距
-    verticalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:3.5];
-    
+```objc
+// 2. 创建竖向排列的 Group，每列最多 3 行
+NSCollectionLayoutGroup *verticalGroup = [NSCollectionLayoutGroup verticalGroupWithLayoutSize:[NSCollectionLayoutSize                                       sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:213]
+heightDimension:[NSCollectionLayoutDimension absoluteDimension:307]]
+subitem:item count:3];
+// 上下cell间距
+verticalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:3.5];
+```
 
-
-    // 3. 创建水平滚动的 Group，每一行包含多个竖向排列的列
-    NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
-                                                [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:213]
-                                                                               heightDimension:[NSCollectionLayoutDimension estimatedDimension:330]]
-                                                                                              subitem:verticalGroup count:1];
-    // 4. 创建 Section
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:horizontalGroup];
-    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 使其支持水平滚动
+```objc
+    // 3. 创建 Section
+    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:verticalGroup];
+    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 按Group分页
     // Section内部inset
     section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
     // Group与Group之间的间距
     section.interGroupSpacing = 10;
-    
-    // 5 section header
-    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
-    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
-    header.pinToVisibleBounds = NO;
-    
-    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
-    footer.pinToVisibleBounds = NO;
-    section.boundarySupplementaryItems = @[header, footer];
-    
-    return section;
-}
 ```
+
+
 
 #### 嵌套关系解析
 
 1. **Item**：单个卡片，尺寸 `213×100`
 2. **verticalGroup**：竖向 Group，包含 3 个 item（`count:3`），高度 `307`（3×100 + 2×3.5 间距）
-3. **horizontalGroup**：横向 Group，将 `verticalGroup` 作为 subitem（`count:1` 表示每页显示一列）
-4. **Section**：设置 `orthogonalScrollingBehavior = GroupPaging`，实现该 section 的横向分页滚动
+4. **Section**：以**verticalGroup**样式，生成Section；设置 `orthogonalScrollingBehavior = GroupPaging`，实现该 section 的横向分页滚动
 
 #### 视觉效果
 
@@ -250,45 +226,30 @@ layout.configuration = config;
 
 #### 代码实现
 
-```164:202:WyHelperComponents/Classes/UICollectionViewDemo/WyCompositionalLayoutController.m
-- (NSCollectionLayoutSection *)sectionForVertical {
+```objc
     // 1. 创建单元格的布局项 (Item)
     NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:
                                     [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:0.33]
                                                                    heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]];  // 设定单元格的高度为 100
 
-    // 2. 创建竖向排列的 Group，每列最多 3 行
+    // 2. 创建水平Group，每行限制3个；
     NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
                                               [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
                                                                              heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]
                                                                                           subitem:item count:3];
-    // 上下cell间距
+    // cell间距
     horizontalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:10];
     
+    // group的inset
+    horizontalGroup.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+    
 
-    // 4. 创建水平滚动的 Group，每一行包含多个竖向排列的列
-    NSCollectionLayoutGroup *verticalGroup = [NSCollectionLayoutGroup verticalGroupWithLayoutSize:
-                                               [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                              heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]
-                                                                                           subitem:horizontalGroup count:1];
                                                                                               
-    // 6. 创建 Section
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:verticalGroup];
+    // 3. 创建 Section
+    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:horizontalGroup];
 //    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 使其支持水平滚动
-    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+//    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
     section.interGroupSpacing = 10;
-    
-    // 3.1 section header
-    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
-    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
-    header.pinToVisibleBounds = NO;
-    
-    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
-    footer.pinToVisibleBounds = NO;
-    section.boundarySupplementaryItems = @[header, footer];
-    
-    return section;
-}
 ```
 
 #### 布局解析

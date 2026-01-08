@@ -140,7 +140,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
     verticalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:3.5];
     
 
-    // 4. 创建 Section
+    // 3. 创建 Section
     NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:verticalGroup];
     section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 按Group分页
     // Section内部inset
@@ -148,7 +148,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
     // Group与Group之间的间距
     section.interGroupSpacing = 10;
     
-    // 5 section header
+    // 4 section header
     NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]];
     NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
     header.pinToVisibleBounds = NO;
@@ -179,7 +179,7 @@ static NSString *const kWyTagSection = @"WyTagSection";
     
 
                                                                                               
-    // 6. 创建 Section
+    // 3. 创建 Section
     NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:horizontalGroup];
 //    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 使其支持水平滚动
 //    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);

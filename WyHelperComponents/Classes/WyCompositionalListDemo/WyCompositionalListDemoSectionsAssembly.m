@@ -8,6 +8,9 @@
 #import "WyCompositionalListDemoSectionsAssembly.h"
 
 #import "WyCompositionalListDemoSimpleVM.h"
+#import "WyCompositionalListDemoRankArraySection.h"
+#import "WyCompositionalListDemoWaterfallVM.h"
+#import "WyCompositionalListDemoWaterfallSection.h"
 #import "WyCompositionalListDemoHorizontalTextSection.h"
 #import "WyCompositionalListDemoHorizontalWaterfallCellSection.h"
 #import "WyCompositionalListDemoGridSection.h"
@@ -18,6 +21,21 @@
     // 只在这里管理“启用哪些 Section + 顺序”
 
     NSMutableArray<id<WyCompositionalListSection>> *sections = [NSMutableArray array];
+
+    // 0) 复刻：sectionForRankArray
+    {
+        NSMutableArray<NSString *> *items = [NSMutableArray array];
+        for (NSInteger i = 0; i < 18; i++) {
+            [items addObject:[NSString stringWithFormat:@"Rank-%ld", (long)(i + 1)]];
+        }
+        WyCompositionalListDemoSimpleVM *vm =
+        [[WyCompositionalListDemoSimpleVM alloc] initWithSectionID:@"rank_array"
+                                                            header:@"复刻：RankArray"
+                                                            footer:@"Footer"
+                                                           itemIDs:items];
+        WyCompositionalListDemoRankArraySection *s = [[WyCompositionalListDemoRankArraySection alloc] initWithViewModel:vm];
+        [sections addObject:s];
+    }
 
     // 1) 同一个模板 Section（水平滚动）复用两次：仅尺寸不同
     {
@@ -82,6 +100,25 @@
                                                             footer:nil
                                                            itemIDs:items];
         WyCompositionalListDemoGridSection *s = [[WyCompositionalListDemoGridSection alloc] initWithViewModel:vm];
+        [sections addObject:s];
+    }
+
+    // 4) 复刻：瀑布流 generateWaterfallSectionWithEnvironment
+    {
+        NSMutableArray<NSString *> *itemIDs = [NSMutableArray array];
+        NSMutableDictionary<NSString *, NSNumber *> *heightByID = [NSMutableDictionary dictionary];
+        for (NSInteger i = 0; i < 30; i++) {
+            NSString *itemID = [NSString stringWithFormat:@"WF-%ld", (long)(i + 1)];
+            [itemIDs addObject:itemID];
+            heightByID[itemID] = @(arc4random_uniform(100) + 100);
+        }
+        WyCompositionalListDemoWaterfallVM *vm =
+        [[WyCompositionalListDemoWaterfallVM alloc] initWithSectionID:@"waterfall"
+                                                               header:@"复刻：Waterfall"
+                                                               footer:@"Footer"
+                                                              itemIDs:itemIDs
+                                                           heightByID:heightByID];
+        WyCompositionalListDemoWaterfallSection *s = [[WyCompositionalListDemoWaterfallSection alloc] initWithViewModel:vm];
         [sections addObject:s];
     }
 

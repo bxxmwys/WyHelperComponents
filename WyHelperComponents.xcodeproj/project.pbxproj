@@ -44,6 +44,9 @@
 		98F7B2012F0000200000000A /* WyCompositionalListDemoHorizontalTextSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F0000200000000A /* WyCompositionalListDemoHorizontalTextSection.m */; };
 		98F7B2012F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m */; };
 		98F7B2012F0000200000000E /* WyCompositionalListDemoGridSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F0000200000000E /* WyCompositionalListDemoGridSection.m */; };
+		98F7B2012F00002000000010 /* WyCompositionalListDemoRankArraySection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F00002000000010 /* WyCompositionalListDemoRankArraySection.m */; };
+		98F7B2012F00002000000012 /* WyCompositionalListDemoWaterfallVM.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F00002000000012 /* WyCompositionalListDemoWaterfallVM.m */; };
+		98F7B2012F00002000000014 /* WyCompositionalListDemoWaterfallSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F00002000000014 /* WyCompositionalListDemoWaterfallSection.m */; };
 		98D03FD12D2E757700472D48 /* WyCollectionReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD02D2E757700472D48 /* WyCollectionReusableView.m */; };
 		98D03FD52D2E82F600472D48 /* WyBackgroundReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD42D2E82F600472D48 /* WyBackgroundReusableView.m */; };
 		98D03FD82D2E8A2700472D48 /* WyCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD72D2E8A2700472D48 /* WyCollectionViewCell.m */; };
@@ -108,6 +111,12 @@
 		98F7B2002F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoHorizontalWaterfallCellSection.m; sourceTree = "<group>"; };
 		98F7B2002F0000200000000D /* WyCompositionalListDemoGridSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoGridSection.h; sourceTree = "<group>"; };
 		98F7B2002F0000200000000E /* WyCompositionalListDemoGridSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoGridSection.m; sourceTree = "<group>"; };
+		98F7B2002F0000200000000F /* WyCompositionalListDemoRankArraySection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoRankArraySection.h; sourceTree = "<group>"; };
+		98F7B2002F00002000000010 /* WyCompositionalListDemoRankArraySection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoRankArraySection.m; sourceTree = "<group>"; };
+		98F7B2002F00002000000011 /* WyCompositionalListDemoWaterfallVM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoWaterfallVM.h; sourceTree = "<group>"; };
+		98F7B2002F00002000000012 /* WyCompositionalListDemoWaterfallVM.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoWaterfallVM.m; sourceTree = "<group>"; };
+		98F7B2002F00002000000013 /* WyCompositionalListDemoWaterfallSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoWaterfallSection.h; sourceTree = "<group>"; };
+		98F7B2002F00002000000014 /* WyCompositionalListDemoWaterfallSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoWaterfallSection.m; sourceTree = "<group>"; };
 		985F5E112D2BCD500097EFCB /* WyBaseNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyBaseNavigationController.h; sourceTree = "<group>"; };
 		985F5E122D2BCD500097EFCB /* WyBaseNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyBaseNavigationController.m; sourceTree = "<group>"; };
 		986C736E2DA925550073C3C0 /* WyAccountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyAccountModel.h; sourceTree = "<group>"; };
@@ -163,6 +172,12 @@
 				98F7B2002F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m */,
 				98F7B2002F0000200000000D /* WyCompositionalListDemoGridSection.h */,
 				98F7B2002F0000200000000E /* WyCompositionalListDemoGridSection.m */,
+				98F7B2002F0000200000000F /* WyCompositionalListDemoRankArraySection.h */,
+				98F7B2002F00002000000010 /* WyCompositionalListDemoRankArraySection.m */,
+				98F7B2002F00002000000011 /* WyCompositionalListDemoWaterfallVM.h */,
+				98F7B2002F00002000000012 /* WyCompositionalListDemoWaterfallVM.m */,
+				98F7B2002F00002000000013 /* WyCompositionalListDemoWaterfallSection.h */,
+				98F7B2002F00002000000014 /* WyCompositionalListDemoWaterfallSection.m */,
 			);
 			path = WyCompositionalListDemo;
 			sourceTree = "<group>";
@@ -530,6 +545,9 @@
 				98F7B2012F0000200000000A /* WyCompositionalListDemoHorizontalTextSection.m in Sources */,
 				98F7B2012F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m in Sources */,
 				98F7B2012F0000200000000E /* WyCompositionalListDemoGridSection.m in Sources */,
+				98F7B2012F00002000000010 /* WyCompositionalListDemoRankArraySection.m in Sources */,
+				98F7B2012F00002000000012 /* WyCompositionalListDemoWaterfallVM.m in Sources */,
+				98F7B2012F00002000000014 /* WyCompositionalListDemoWaterfallSection.m in Sources */,
 				985F5DFF2D2B77380097EFCB /* AppDelegate.m in Sources */,
 				985F5E002D2B77380097EFCB /* main.m in Sources */,
 				985F5E012D2B77380097EFCB /* SceneDelegate.m in Sources */,

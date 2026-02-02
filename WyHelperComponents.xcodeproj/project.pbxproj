@@ -34,6 +34,16 @@
 		988B1BB12E01ACB70043C324 /* WGradientCurveLineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 988B1BB02E01ACB70043C324 /* WGradientCurveLineView.m */; };
 		98A506C02E1939E80068A2E9 /* WaterfallItemModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 98A506BF2E1939E80068A2E9 /* WaterfallItemModel.m */; };
 		98A506C32E193A060068A2E9 /* WaterfallCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 98A506C22E193A060068A2E9 /* WaterfallCell.m */; };
+		98F7A1012F00000100000003 /* WyCompositionalListView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7A1002F00000100000003 /* WyCompositionalListView.m */; };
+		98F7B1012F00001000000003 /* WyCompositionalListBaseSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B1002F00001000000003 /* WyCompositionalListBaseSection.m */; };
+		98F7B1012F00001000000005 /* WyCompositionalListHorizontalTemplateSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B1002F00001000000005 /* WyCompositionalListHorizontalTemplateSection.m */; };
+		98F7B2012F00002000000002 /* WyCompositionalListDemoController.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F00002000000002 /* WyCompositionalListDemoController.m */; };
+		98F7B2012F00002000000004 /* WyCompositionalListDemoSectionsAssembly.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F00002000000004 /* WyCompositionalListDemoSectionsAssembly.m */; };
+		98F7B2012F00002000000006 /* WyCompositionalListDemoSimpleVM.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F00002000000006 /* WyCompositionalListDemoSimpleVM.m */; };
+		98F7B2012F00002000000008 /* WyCompositionalListDemoHorizontalBaseSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F00002000000008 /* WyCompositionalListDemoHorizontalBaseSection.m */; };
+		98F7B2012F0000200000000A /* WyCompositionalListDemoHorizontalTextSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F0000200000000A /* WyCompositionalListDemoHorizontalTextSection.m */; };
+		98F7B2012F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m */; };
+		98F7B2012F0000200000000E /* WyCompositionalListDemoGridSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F7B2002F0000200000000E /* WyCompositionalListDemoGridSection.m */; };
 		98D03FD12D2E757700472D48 /* WyCollectionReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD02D2E757700472D48 /* WyCollectionReusableView.m */; };
 		98D03FD52D2E82F600472D48 /* WyBackgroundReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD42D2E82F600472D48 /* WyBackgroundReusableView.m */; };
 		98D03FD82D2E8A2700472D48 /* WyCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 98D03FD72D2E8A2700472D48 /* WyCollectionViewCell.m */; };
@@ -76,6 +86,28 @@
 		985F5E0A2D2BBB8A0097EFCB /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		985F5E0D2D2BBF9A0097EFCB /* WyCompositionalLayoutController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalLayoutController.h; sourceTree = "<group>"; };
 		985F5E0E2D2BBF9A0097EFCB /* WyCompositionalLayoutController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalLayoutController.m; sourceTree = "<group>"; };
+		98F7A1002F00000100000001 /* WyCompositionalListSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListSection.h; sourceTree = "<group>"; };
+		98F7A1002F00000100000002 /* WyCompositionalListView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListView.h; sourceTree = "<group>"; };
+		98F7A1002F00000100000003 /* WyCompositionalListView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListView.m; sourceTree = "<group>"; };
+		98F7B1002F00001000000001 /* WyCompositionalListSectionViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListSectionViewModel.h; sourceTree = "<group>"; };
+		98F7B1002F00001000000002 /* WyCompositionalListBaseSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListBaseSection.h; sourceTree = "<group>"; };
+		98F7B1002F00001000000003 /* WyCompositionalListBaseSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListBaseSection.m; sourceTree = "<group>"; };
+		98F7B1002F00001000000004 /* WyCompositionalListHorizontalTemplateSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListHorizontalTemplateSection.h; sourceTree = "<group>"; };
+		98F7B1002F00001000000005 /* WyCompositionalListHorizontalTemplateSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListHorizontalTemplateSection.m; sourceTree = "<group>"; };
+		98F7B2002F00002000000001 /* WyCompositionalListDemoController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoController.h; sourceTree = "<group>"; };
+		98F7B2002F00002000000002 /* WyCompositionalListDemoController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoController.m; sourceTree = "<group>"; };
+		98F7B2002F00002000000003 /* WyCompositionalListDemoSectionsAssembly.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoSectionsAssembly.h; sourceTree = "<group>"; };
+		98F7B2002F00002000000004 /* WyCompositionalListDemoSectionsAssembly.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoSectionsAssembly.m; sourceTree = "<group>"; };
+		98F7B2002F00002000000005 /* WyCompositionalListDemoSimpleVM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoSimpleVM.h; sourceTree = "<group>"; };
+		98F7B2002F00002000000006 /* WyCompositionalListDemoSimpleVM.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoSimpleVM.m; sourceTree = "<group>"; };
+		98F7B2002F00002000000007 /* WyCompositionalListDemoHorizontalBaseSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoHorizontalBaseSection.h; sourceTree = "<group>"; };
+		98F7B2002F00002000000008 /* WyCompositionalListDemoHorizontalBaseSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoHorizontalBaseSection.m; sourceTree = "<group>"; };
+		98F7B2002F00002000000009 /* WyCompositionalListDemoHorizontalTextSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoHorizontalTextSection.h; sourceTree = "<group>"; };
+		98F7B2002F0000200000000A /* WyCompositionalListDemoHorizontalTextSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoHorizontalTextSection.m; sourceTree = "<group>"; };
+		98F7B2002F0000200000000B /* WyCompositionalListDemoHorizontalWaterfallCellSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoHorizontalWaterfallCellSection.h; sourceTree = "<group>"; };
+		98F7B2002F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoHorizontalWaterfallCellSection.m; sourceTree = "<group>"; };
+		98F7B2002F0000200000000D /* WyCompositionalListDemoGridSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyCompositionalListDemoGridSection.h; sourceTree = "<group>"; };
+		98F7B2002F0000200000000E /* WyCompositionalListDemoGridSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyCompositionalListDemoGridSection.m; sourceTree = "<group>"; };
 		985F5E112D2BCD500097EFCB /* WyBaseNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyBaseNavigationController.h; sourceTree = "<group>"; };
 		985F5E122D2BCD500097EFCB /* WyBaseNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WyBaseNavigationController.m; sourceTree = "<group>"; };
 		986C736E2DA925550073C3C0 /* WyAccountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WyAccountModel.h; sourceTree = "<group>"; };
@@ -114,6 +146,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		98F7B9002F00002000000000 /* WyCompositionalListDemo */ = {
+			isa = PBXGroup;
+			children = (
+				98F7B2002F00002000000001 /* WyCompositionalListDemoController.h */,
+				98F7B2002F00002000000002 /* WyCompositionalListDemoController.m */,
+				98F7B2002F00002000000003 /* WyCompositionalListDemoSectionsAssembly.h */,
+				98F7B2002F00002000000004 /* WyCompositionalListDemoSectionsAssembly.m */,
+				98F7B2002F00002000000005 /* WyCompositionalListDemoSimpleVM.h */,
+				98F7B2002F00002000000006 /* WyCompositionalListDemoSimpleVM.m */,
+				98F7B2002F00002000000007 /* WyCompositionalListDemoHorizontalBaseSection.h */,
+				98F7B2002F00002000000008 /* WyCompositionalListDemoHorizontalBaseSection.m */,
+				98F7B2002F00002000000009 /* WyCompositionalListDemoHorizontalTextSection.h */,
+				98F7B2002F0000200000000A /* WyCompositionalListDemoHorizontalTextSection.m */,
+				98F7B2002F0000200000000B /* WyCompositionalListDemoHorizontalWaterfallCellSection.h */,
+				98F7B2002F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m */,
+				98F7B2002F0000200000000D /* WyCompositionalListDemoGridSection.h */,
+				98F7B2002F0000200000000E /* WyCompositionalListDemoGridSection.m */,
+			);
+			path = WyCompositionalListDemo;
+			sourceTree = "<group>";
+		};
 		98262A442EC5C405004AAF15 /* PagingDemo */ = {
 			isa = PBXGroup;
 			children = (
@@ -230,6 +283,15 @@
 		985F5E0B2D2BBF130097EFCB /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				98F7A1002F00000100000001 /* WyCompositionalListSection.h */,
+				98F7A1002F00000100000002 /* WyCompositionalListView.h */,
+				98F7A1002F00000100000003 /* WyCompositionalListView.m */,
+				98F7B1002F00001000000001 /* WyCompositionalListSectionViewModel.h */,
+				98F7B1002F00001000000002 /* WyCompositionalListBaseSection.h */,
+				98F7B1002F00001000000003 /* WyCompositionalListBaseSection.m */,
+				98F7B1002F00001000000004 /* WyCompositionalListHorizontalTemplateSection.h */,
+				98F7B1002F00001000000005 /* WyCompositionalListHorizontalTemplateSection.m */,
+				98F7B9002F00002000000000 /* WyCompositionalListDemo */,
 				98262A442EC5C405004AAF15 /* PagingDemo */,
 				987E6D3B2DD5BEE7001F305A /* UILabelDemo */,
 				987E6D372DD5BE84001F305A /* BezierDemo */,
@@ -458,6 +520,16 @@
 				985EE8BF2EFD446800B23083 /* UIScrollView+CustomMJRefresh.m in Sources */,
 				986C73702DA925550073C3C0 /* WyAccountModel.mm in Sources */,
 				98A506C32E193A060068A2E9 /* WaterfallCell.m in Sources */,
+				98F7A1012F00000100000003 /* WyCompositionalListView.m in Sources */,
+				98F7B1012F00001000000003 /* WyCompositionalListBaseSection.m in Sources */,
+				98F7B1012F00001000000005 /* WyCompositionalListHorizontalTemplateSection.m in Sources */,
+				98F7B2012F00002000000002 /* WyCompositionalListDemoController.m in Sources */,
+				98F7B2012F00002000000004 /* WyCompositionalListDemoSectionsAssembly.m in Sources */,
+				98F7B2012F00002000000006 /* WyCompositionalListDemoSimpleVM.m in Sources */,
+				98F7B2012F00002000000008 /* WyCompositionalListDemoHorizontalBaseSection.m in Sources */,
+				98F7B2012F0000200000000A /* WyCompositionalListDemoHorizontalTextSection.m in Sources */,
+				98F7B2012F0000200000000C /* WyCompositionalListDemoHorizontalWaterfallCellSection.m in Sources */,
+				98F7B2012F0000200000000E /* WyCompositionalListDemoGridSection.m in Sources */,
 				985F5DFF2D2B77380097EFCB /* AppDelegate.m in Sources */,
 				985F5E002D2B77380097EFCB /* main.m in Sources */,
 				985F5E012D2B77380097EFCB /* SceneDelegate.m in Sources */,

@@ -1,637 +1,436 @@
-# UICollectionViewCompositionalLayout 使用教程
+# UICollectionViewCompositionalLayout 使用教程（模块化 + 逐层组装）
 
-> 本教程基于 `WyCompositionalLayoutController.m` 示例代码，分步骤讲解 `UICollectionViewCompositionalLayout` 的核心概念和使用方法。
+> 本文以 `UICollectionViewCompositionalLayout` 为核心，按模块讲清 **size / inset / item / group / section / header / footer / background** 的配置项与作用，并最终把它们“一层层组装”成完整页面。  
+> 仓库示例参考：`WyCompositionalLayoutController.m`（包含水平分页、网格、瀑布流 customGroup、header/footer、background decoration 等）。
 
 ## 目录
 
-- [1. 核心概念：Item、Group、Section 的关系](#1-核心概念itemgroupsection-的关系)
-- [2. 第一步：创建 CompositionalLayout](#2-第一步创建-compositionallayout)
-- [3. 第二步：构建 Section（从内到外）](#3-第二步构建-section从内到外)
-  - [3.1 Rank Section：嵌套 Group + 正交滚动](#31-rank-section嵌套-group--正交滚动)
-  - [3.2 Vertical Section：3 列网格布局](#32-vertical-section3-列网格布局)
-  - [3.3 Horizontal Section：横向分页列表](#33-horizontal-section横向分页列表)
-  - [3.4 Waterfall Section：瀑布流布局](#34-waterfall-section瀑布流布局)
-- [4. 第三步：Header/Footer（Supplementary）的使用](#4-第三步headerfootersupplementary-的使用)
-- [5. 嵌套 Group 的通用模板](#5-嵌套-group-的通用模板)
-- [6. 实用技巧与注意事项](#6-实用技巧与注意事项)
+- [0. 最终我们要组装出什么](#0-最终我们要组装出什么)
+- [1. Size 模块：NSCollectionLayoutSize / NSCollectionLayoutDimension](#1-size-模块nscollectionlayoutsize--nscollectionlayoutdimension)
+- [2. Inset/Spacing 模块：contentInsets / interItemSpacing / interGroupSpacing / edgeSpacing](#2-insetspacing-模块contentinsets--interitemspacing--intergroupspacing--edgespacing)
+- [3. Item 模块：NSCollectionLayoutItem](#3-item-模块nscollectionlayoutitem)
+- [4. Group 模块：NSCollectionLayoutGroup（横向/纵向/自定义）](#4-group-模块nscollectionlayoutgroup横向纵向自定义)
+- [5. Section 模块：NSCollectionLayoutSection（滚动、补充视图、背景、回调）](#5-section-模块nscollectionlayoutsection滚动补充视图背景回调)
+- [6. Header/Footer 模块：Boundary Supplementary](#6-headerfooter-模块boundary-supplementary)
+- [7. Background 模块：Decoration View](#7-background-模块decoration-view)
+- [8. 逐层组装：从 Item→Group→Section→Layout→CollectionView](#8-逐层组装从-itemgroupsectionlayoutcollectionview)
+- [9. 对照仓库示例：你该看哪些函数](#9-对照仓库示例你该看哪些函数)
 
 ---
 
+## 0. 最终我们要组装出什么
 
+`UICollectionViewCompositionalLayout` 的本质是：**Layout 由多个 Section 组成；每个 Section 由一个“根 Group”驱动；Group 里放 Item 或子 Group**。
 
-## 1. 核心概念：Item、Group、Section 的关系
-
-在 `UICollectionViewCompositionalLayout` 中，布局由三层结构组成：
-
-![13d53ec3dc6e22c9444d424af86c96a7.png](UICollectionViewCompositionalLayout使用教程.assets/6d733b945fd3e097a527ce92332081e1.png)
-
-### 1.1 三层结构
-
-- **`NSCollectionLayoutItem`（Item）**  
-  最小的布局单元，对应一个 cell。它定义了单个单元格的尺寸和边距。
-
-- **`NSCollectionLayoutGroup`（Group）**  
-  用来组织 Item 的容器，决定 Item 如何排列（横向、纵向或自定义位置）。  
-  **关键点**：Group 可以包含 Item，也可以包含另一个 Group（这就是嵌套的核心）。
-
-- **`NSCollectionLayoutSection`（Section）**  
-  将某个 Group 作为 section 的内容，并在 section 级别控制：
-  - 内容边距（`contentInsets`）
-  - Group 之间的间距（`interGroupSpacing`）
-  - 正交滚动行为（`orthogonalScrollingBehavior`）
-  - Header/Footer（`boundarySupplementaryItems`）
-
-### 1.2 关系图
-
-```
-Layout
-  └── Section 1
-      └── Group (根 Group)
-          ├── Item 1
-          ├── Item 2
-          └── SubGroup (嵌套 Group)
-              ├── Item 3
-              └── Item 4
-  └── Section 2
-      └── Group
-          └── Item 5
+```mermaid
+flowchart TD
+CollectionView-->Layout
+Layout-->SectionA
+Layout-->SectionB
+SectionA-->RootGroupA
+SectionB-->RootGroupB
+RootGroupA-->ItemA1
+RootGroupA-->ItemA2
+RootGroupA-->SubGroupA
+SubGroupA-->ItemA3
+RootGroupB-->ItemB1
 ```
 
-### 1.3 记忆口诀
-
-**Item 定尺寸，Group 定排列，Section 定行为与装饰。**
+记忆一句话：**Item 定“单元尺寸/边距”，Group 定“排列方式”，Section 定“行为/装饰/滚动”。**
 
 ---
 
+## 1. Size 模块：NSCollectionLayoutSize / NSCollectionLayoutDimension
 
+### 1.1 `NSCollectionLayoutSize` 是什么
 
-## 2. 第一步：创建 CompositionalLayout
-
-在 `WyCompositionalLayoutController` 中，通过 `sectionProvider` 动态返回不同 section 的布局：
-
-```objc
-- (UICollectionViewCompositionalLayout *)generateLayout {
-    @weakify(self)
-    UICollectionViewCompositionalLayout *layout = [[UICollectionViewCompositionalLayout alloc] initWithSectionProvider:^NSCollectionLayoutSection * _Nullable(NSInteger sectionIndex, id<NSCollectionLayoutEnvironment> _Nonnull layoutEnvironment) {
-        @strongify(self)
-        // 获取当前 section 的标识符
-        NSString *sectionIdentifier = [self.dataSource snapshot].sectionIdentifiers[sectionIndex];
-        // 根据标识判断Section的样式类型，然后根据类型，初始化不同的Section样式；
-        if ([sectionIdentifier isEqualToString:kWyRankSection]) {
-            return [self sectionForRankArray];
-        } else if ([sectionIdentifier isEqualToString:kWyVerSection]) {
-            return [self sectionForVertical];
-        } else if ([sectionIdentifier isEqualToString:kWyHorSection]) {
-            return [self sectionForHorizontal];
-        } else if ([sectionIdentifier isEqualToString:kWyWaterfallSection]) {
-            return [self generateWaterfallSectionWithEnvironment:layoutEnvironment];
-        }
-        return nil;
-    }];
-    
-    // 注册背景的样式
-    [layout registerClass:WyBackgroundReusableView.class forDecorationViewOfKind:@"background"];
-    
-    // 初始化layout的Header
-    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21HeaderHeight]];
-    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:kVEarnRewardV21ElementKindHeader alignment:NSRectAlignmentTop];
-    header.pinToVisibleBounds = NO;
-    header.zIndex = -1;
-    
-    // 初始化layout的Footer
-    NSCollectionLayoutSize *footerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21FooterHeight]];
-    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:footerSize elementKind:kVEarnRewardV21ElementKindFooter alignment:NSRectAlignmentBottom];
-    footer.pinToVisibleBounds = NO;
-    footer.zIndex = -1;
-    
-    UICollectionViewCompositionalLayoutConfiguration *config = UICollectionViewCompositionalLayoutConfiguration.new;
-    // Section与Section之间的间距
-    config.interSectionSpacing = (12);
-    // layout整组的header与footer
-    config.boundarySupplementaryItems = @[header, footer];
-    
-    layout.configuration = config;
-    
-    return layout;
-}
-```
-
-### 关键点
-
-1. **`sectionProvider`**：根据 `sectionIndex` 返回对应的 `NSCollectionLayoutSection`，实现一个页面混合多种布局。
-2. **`layoutEnvironment`**：提供容器信息（如可用宽度），在瀑布流等需要精确计算的场景中非常有用。
-
-### Layout 全局配置
+`NSCollectionLayoutSize` 用来描述 **宽/高**，由两个 `NSCollectionLayoutDimension` 组成：
 
 ```objective-c
-UICollectionViewCompositionalLayoutConfiguration *config = UICollectionViewCompositionalLayoutConfiguration.new;
-config.interSectionSpacing = (12);
-config.boundarySupplementaryItems = @[header, footer];
-
-layout.configuration = config;
+NSCollectionLayoutSize *size =
+  [NSCollectionLayoutSize sizeWithWidthDimension:W heightDimension:H];
 ```
 
-- **`interSectionSpacing`**：控制不同 section 之间的间距
-- **`boundarySupplementaryItems`**：设置全局的 header/footer（区别于 section 自己的 header/footer）
+它会出现在 **Item、Group、Supplementary（header/footer）、Decoration（background）** 上。
+
+### 1.2 `NSCollectionLayoutDimension` 四种常用维度
+
+- **absolute**：绝对值（点数）
+  - 适用：固定宽高卡片、固定高度 header
+  - 例：`[NSCollectionLayoutDimension absoluteDimension:100]`
+- **fractionalWidth / fractionalHeight**：相对于“容器”的比例
+  - 注意：Item 的 fractional 参照的是 **所在 Group 的尺寸**
+  - 例：三列网格 item 宽：`fractionalWidthDimension:1.0/3.0`
+- **estimated**：估算值（系统可能根据内容二次计算）
+  - 适用：自适应高度（文本多行、动态内容）
+  - 风险：复杂布局中可能导致 **反复自适应（feedback loop）/ 抖动**
+  - 经验：能算出明确高度就尽量别 estimated；瀑布流一般走 customGroup 自算 frame 更稳
+
+### 1.3 你该怎么选（快速决策）
+
+- **网格/横向卡片**：item 高度通常 `absolute`，宽度用 `fractionalWidth` 或 group 固定宽
+- **自适应文字 cell**：item 高度 `estimated`，但要控制好约束/内容，避免回流
+- **瀑布流**：优先 `customGroup`，在 itemProvider 里给出确定 frame
 
 ---
 
+## 2. Inset/Spacing 模块：contentInsets / interItemSpacing / interGroupSpacing / edgeSpacing
 
+### 2.1 先区分 4 种“空隙”来源
 
-## 3. 第二步：构建 Section（从内到外）
+- **`contentInsets`**：内容内边距（Item、Group、Section 都能设置）
+  - Item：等价于 cell 内容四周留白（影响 item 实际占位）
+  - Group：group 内整体留白（影响 group 内 item 排列区域）
+  - Section：section 在 collectionView 内容中的内边距
+- **`interItemSpacing`**（Group 级）：同一个 group 内部“相邻 item”的间距
+- **`interGroupSpacing`**（Section 级）：section 内部“相邻 group”的间距（例如行与行）
+- **`edgeSpacing`**（Item 级）：更细粒度的 item 边缘间距（对齐/贴边控制）
 
-构建 section 的标准流程：
+### 2.2 常见搭配（建议）
 
-1. **定义 Item 的尺寸**
-2. **定义 Group（横向/纵向/嵌套/自定义）**
-3. **将 Group 放入 Section，并设置 section 行为**
-
-下面逐个分析示例中的四种 section。
-
----
-
-### 3.1 Rank Section：嵌套 Group + 正交滚动
-
-这个 section 实现了**横向滚动的列，每列包含 3 个竖向堆叠的 item**。
-
-#### 代码实现
-
-```objc
-// 1. 创建单元格的布局项 (Item)
-NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:
-                                    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:213]
-                                                                   heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]];  // 设定单元格的高度为 100
-```
-
-```objc
-// 2. 创建竖向排列的 Group，每列最多 3 行
-NSCollectionLayoutGroup *verticalGroup = [NSCollectionLayoutGroup verticalGroupWithLayoutSize:[NSCollectionLayoutSize                                       sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:213]
-heightDimension:[NSCollectionLayoutDimension absoluteDimension:307]]
-subitem:item count:3];
-// 上下cell间距
-verticalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:3.5];
-```
-
-```objc
-    // 3. 创建 Section
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:verticalGroup];
-    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 按Group分页
-    // Section内部inset
-    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
-    // Group与Group之间的间距
-    section.interGroupSpacing = 10;
-```
-
-
-
-#### 嵌套关系解析
-
-1. **Item**：单个卡片，尺寸 `213×100`
-2. **verticalGroup**：竖向 Group，包含 3 个 item（`count:3`），高度 `307`（3×100 + 2×3.5 间距）
-4. **Section**：以**verticalGroup**样式，生成Section；设置 `orthogonalScrollingBehavior = GroupPaging`，实现该 section 的横向分页滚动
-
-#### 视觉效果
-
-```
-┌─────────────────────────────────────────┐
-│  Section Header                         │
-├─────────────────────────────────────────┤
-│  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐   	│
-│  │Item1│  │Item1│  │Item1│  │Item1│   	│
-│  ├─────┤  ├─────┤  ├─────┤  ├─────┤   	│
-│  │Item2│  │Item2│  │Item2│  │Item2│   	│
-│  ├─────┤  ├─────┤  ├─────┤  ├─────┤   	│
-│  │Item3│  │Item3│  │Item3│  │Item3│   	│
-│  └─────┘  └─────┘  └─────┘  └─────┘   	│
-│   ←──────── 横向滚动（分页）────────→			 │
-├─────────────────────────────────────────┤
-│  Section Footer                         │
-└─────────────────────────────────────────┘
-```
-
-#### 关键 API
-
-- **`verticalGroupWithLayoutSize:subitem:count:`**：创建竖向 Group，`count` 指定包含多少个 subitem
-- **`horizontalGroupWithLayoutSize:subitem:count:`**：创建横向 Group
-- **`orthogonalScrollingBehavior`**：设置正交滚动行为
-  - `GroupPaging`：按 Group 分页滚动
-  - `Continuous`：连续滚动
-  - `None`：不滚动（默认）
+- **三列网格**：
+  - section `contentInsets` 控制左右边距
+  - group `interItemSpacing` 控制列间距
+  - section `interGroupSpacing` 控制行间距
+- **横向分页卡片**：
+  - section `contentInsets` 控制左右留白
+  - section `interGroupSpacing` 控制卡片之间距离
+- **瀑布流**：
+  - 如果你在 frame 里自己把 inset/spacing 都算了，就不要再叠加 group/section 同样的 inset（避免“双重 inset”）
 
 ---
 
-### 3.2 Vertical Section：3 列网格布局
+## 3. Item 模块：NSCollectionLayoutItem
 
-这个 section 实现了常见的**3 列网格布局**。
+### 3.1 Item 的作用
 
-#### 代码实现
+Item 描述“一个 cell 的几何规则”：**尺寸 +（可选）内边距/边缘间距**。
 
-```objc
-    // 1. 创建单元格的布局项 (Item)
-    NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:
-                                    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:0.33]
-                                                                   heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]];  // 设定单元格的高度为 100
+```objective-c
+NSCollectionLayoutSize *itemSize =
+  [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                 heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]];
 
-    // 2. 创建水平Group，每行限制3个；
-    NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
-                                              [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                             heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]]
-                                                                                          subitem:item count:3];
-    // cell间距
-    horizontalGroup.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:10];
-    
-    // group的inset
-    horizontalGroup.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
-    
-
-                                                                                              
-    // 3. 创建 Section
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:horizontalGroup];
-//    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 使其支持水平滚动
-//    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
-    section.interGroupSpacing = 10;
+NSCollectionLayoutItem *item =
+  [NSCollectionLayoutItem itemWithLayoutSize:itemSize];
 ```
 
-#### 布局解析
+### 3.2 Item 常用参数说明
 
-1. **Item**：宽度为 Group 的 `33%`（`fractionalWidthDimension:0.33`），高度 `estimatedDimension:100`
-2. **horizontalGroup**：横向 Group，包含 3 个 item（`count:3`），形成一行 3 列
-3. **verticalGroup**：竖向 Group，将 `horizontalGroup` 作为 subitem（`count:1` 表示每组只有一行）
-4. **Section**：未开启正交滚动，正常竖向滚动
+- **`layoutSize`**：必须。决定 item 的宽高策略
+- **`contentInsets`**：可选。给 item 内边距（常用于 cell 周围留白）
+- **`edgeSpacing`**：可选。更精细地控制 item 与周边的“贴边距离”
 
-#### 关键概念
+示例（给 item 加内边距）：
 
-- **`fractionalWidthDimension:0.33`**：Item 宽度占 Group 宽度的 1/3，3 个 item 正好铺满一行
-- **`interItemSpacing`**：控制 Group 内部 Item 之间的间距（这里是同一行内 3 个 item 的间距）
-- **`interGroupSpacing`**：控制 Group 之间的间距（这里是行与行之间的间距）
-
-#### 视觉效果
-
-```
-┌─────────────────────────────────────────┐
-│  Section Header                         │
-├─────────────────────────────────────────┤
-│  ┌────┐  ┌────┐  ┌────┐                │
-│  │Item│  │Item│  │Item│                │
-│  └────┘  └────┘  └────┘                │
-│  ┌────┐  ┌────┐  ┌────┐                │
-│  │Item│  │Item│  │Item│                │
-│  └────┘  └────┘  └────┘                │
-│  ┌────┐  ┌────┐  ┌────┐                │
-│  │Item│  │Item│  │Item│                │
-│  └────┘  └────┘  └────┘                │
-│         ↓ 竖向滚动                      │
-├─────────────────────────────────────────┤
-│  Section Footer                         │
-└─────────────────────────────────────────┘
+```objective-c
+item.contentInsets = NSDirectionalEdgeInsetsMake(0, 0, 0, 0);
 ```
 
 ---
 
-### 3.3 Horizontal Section：横向分页列表
+## 4. Group 模块：NSCollectionLayoutGroup（横向/纵向/自定义）
 
-这个 section 实现了**固定宽度的横向分页滚动列表**。
+Group 决定“怎么把 item 排成一组”。常见 3 类：
 
-#### 代码实现
+### 4.1 横向 Group（horizontal）
 
-```204:231:WyHelperComponents/Classes/UICollectionViewDemo/WyCompositionalLayoutController.m
-- (NSCollectionLayoutSection *)sectionForHorizontal {
-    // 1. 创建单元格的布局项 (Item)
-    NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:
-                                    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                   heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]];  // 设定单元格的高度为 100
-    
-    // 2. 创建水平滚动的 Group，每一行包含多个竖向排列的列
-    NSCollectionLayoutGroup *horizontalGroup = [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:
-                                                [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:98]
-                                                                               heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]]
-                                                                                              subitem:item count:1];
-    // 3. 创建 Section
-    NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:horizontalGroup];
-    section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;  // 使其支持水平滚动
-    section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
-    section.interGroupSpacing = 10;
-    
-    // 3.1 section header
-    NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
-    NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
-    header.pinToVisibleBounds = NO;
-    
-    NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
-    footer.pinToVisibleBounds = NO;
-    section.boundarySupplementaryItems = @[header, footer];
-    
-    return section;
+适用：一行多列网格、横向卡片列表（配合 section 正交滚动）。
+
+```objective-c
+NSCollectionLayoutGroup *group =
+  [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:groupSize
+                                                 subitem:item
+                                                   count:3];
+```
+
+常用参数：
+
+- **`count`**：在该 group 内重复多少个 `subitem`
+- **`interItemSpacing`**：列间距（同一行的 item 间距）
+- **`contentInsets`**：group 内边距
+
+### 4.2 纵向 Group（vertical）
+
+适用：一列多行堆叠、或者作为“子 Group”再被横向 group 包裹（实现“横向分页的列”）。
+
+```objective-c
+NSCollectionLayoutGroup *group =
+  [NSCollectionLayoutGroup verticalGroupWithLayoutSize:groupSize
+                                               subitem:item
+                                                 count:3];
+```
+
+### 4.3 自定义 Group（customGroup）
+
+适用：瀑布流、杂志流、任何非规则位置布局。你需要在 `itemProvider` 里返回每个 item 的 frame。
+
+```objective-c
+NSCollectionLayoutGroup *group =
+  [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize
+                                       itemProvider:^NSArray<NSCollectionLayoutGroupCustomItem *> *(id<NSCollectionLayoutEnvironment> env) {
+    // return custom frames...
+  }];
+```
+
+---
+
+## 5. Section 模块：NSCollectionLayoutSection（滚动、补充视图、背景、回调）
+
+Section 负责把一个根 Group“放进 collectionView”，并定义这个 section 的行为与装饰。
+
+```objective-c
+NSCollectionLayoutSection *section =
+  [NSCollectionLayoutSection sectionWithGroup:group];
+```
+
+### 5.1 Section 常用参数说明
+
+- **`contentInsets`**：section 内边距（最常用）
+- **`interGroupSpacing`**：group 与 group 的间距（行间距/卡片间距）
+- **`orthogonalScrollingBehavior`**：正交滚动（让某个 section 横向滚动）
+  - 常见：`GroupPaging`（分页）、`Continuous`（连续）、`None`
+- **`boundarySupplementaryItems`**：section 的 header/footer
+- **`decorationItems`**：section 的背景/装饰（对应 decoration view）
+- **`visibleItemsInvalidationHandler`**：滚动时回调，可做视差、缩放、透明度等动效（高级但很实用）
+
+---
+
+## 6. Header/Footer 模块：Boundary Supplementary
+
+Header/Footer 本质是 `NSCollectionLayoutBoundarySupplementaryItem`，它描述“补充视图的尺寸 + 位置 + 行为”。
+
+### 6.1 如何创建 header / footer
+
+```objective-c
+NSCollectionLayoutSize *headerSize =
+  [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                 heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+
+NSCollectionLayoutBoundarySupplementaryItem *header =
+  [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize
+                                                                          elementKind:UICollectionElementKindSectionHeader
+                                                                            alignment:NSRectAlignmentTop];
+```
+
+Footer 同理，只是 `elementKind` 和 `alignment` 不同：
+
+```objective-c
+NSCollectionLayoutBoundarySupplementaryItem *footer =
+  [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize
+                                                                          elementKind:UICollectionElementKindSectionFooter
+                                                                            alignment:NSRectAlignmentBottom];
+```
+
+### 6.2 常用参数说明
+
+- **`elementKind`**：必须。用于区分不同 supplementary 类型（注册/复用/提供 view 都靠它）
+- **`alignment`**：必须。`Top/Bottom/Leading/Trailing` 等对齐方式
+- **`pinToVisibleBounds`**：是否吸顶/吸底（sticky header）
+- **`zIndex`**：层级（背景可用负值；需要压在 cell 下面）
+- **`offset`**：微调位置（少用，但有时能救命）
+
+### 6.3 你还需要做 2 件事：注册 + 提供 View
+
+1）注册：
+
+```objective-c
+[collectionView registerClass:MyHeaderView.class
+   forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+          withReuseIdentifier:@"MyHeaderView"];
+```
+
+2）提供（DiffableDataSource 示例写法）：
+
+```objective-c
+dataSource.supplementaryViewProvider = ^UICollectionReusableView *(UICollectionView *cv, NSString *kind, NSIndexPath *ip) {
+  return [cv dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"MyHeaderView" forIndexPath:ip];
+};
+```
+
+---
+
+## 7. Background 模块：Decoration View
+
+背景一般用 **Decoration View** 来做（它不是 supplementary，而是 layout 级别的“装饰视图”）。
+
+### 7.1 注册 decoration view
+
+```objective-c
+[layout registerClass:MyBackgroundReusableView.class
+forDecorationViewOfKind:@"background"];
+```
+
+### 7.2 给某个 section 加背景
+
+```objective-c
+NSCollectionLayoutDecorationItem *bg =
+  [NSCollectionLayoutDecorationItem backgroundDecorationItemWithElementKind:@"background"];
+bg.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+section.decorationItems = @[bg];
+```
+
+常用参数：
+
+- **`elementKind`**：必须。与注册一致
+- **`contentInsets`**：背景相对 section 内容的内缩/外扩（经常用来留圆角阴影空间）
+
+---
+
+## 8. 逐层组装：从 Item→Group→Section→Layout→CollectionView
+
+下面给一个“最小但完整”的组装示例：页面有两个 section  
+Section0：三列网格（带 header/footer + 背景）  
+Section1：横向分页卡片（带 header + 背景）
+
+> 代码是“可直接拷贝”的骨架，你只需要替换自己的 cell / header view / elementKind。
+
+### 8.1 Step A：先定义 elementKind（建议统一管理）
+
+```objective-c
+static NSString * const MyDecorationBackgroundKind = @"background";
+```
+
+### 8.2 Step B：写两个 section builder（Item→Group→Section）
+
+#### B1）网格 Section（3 列）
+
+```objective-c
+- (NSCollectionLayoutSection *)buildGridSection {
+  NSCollectionLayoutSize *itemSize =
+    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0/3.0]
+                                   heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]];
+  NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:itemSize];
+
+  NSCollectionLayoutSize *groupSize =
+    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                   heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]];
+  NSCollectionLayoutGroup *group =
+    [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:groupSize subitem:item count:3];
+  group.interItemSpacing = [NSCollectionLayoutSpacing fixedSpacing:10];
+
+  NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:group];
+  section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+  section.interGroupSpacing = 10;
+
+  // header/footer
+  NSCollectionLayoutSize *hfSize =
+    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                   heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+  NSCollectionLayoutBoundarySupplementaryItem *header =
+    [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:hfSize
+                                                                            elementKind:UICollectionElementKindSectionHeader
+                                                                              alignment:NSRectAlignmentTop];
+  NSCollectionLayoutBoundarySupplementaryItem *footer =
+    [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:hfSize
+                                                                            elementKind:UICollectionElementKindSectionFooter
+                                                                              alignment:NSRectAlignmentBottom];
+  section.boundarySupplementaryItems = @[header, footer];
+
+  // background
+  NSCollectionLayoutDecorationItem *bg =
+    [NSCollectionLayoutDecorationItem backgroundDecorationItemWithElementKind:MyDecorationBackgroundKind];
+  bg.contentInsets = NSDirectionalEdgeInsetsMake(0, 0, 0, 0);
+  section.decorationItems = @[bg];
+
+  return section;
 }
 ```
 
-#### 布局解析
+#### B2）横向分页卡片 Section
 
-1. **Item**：宽度占 Group 的 100%（`fractionalWidthDimension:1.0`），高度 `estimatedDimension:100`
-2. **horizontalGroup**：横向 Group，固定宽度 `98`，包含 1 个 item
-3. **Section**：开启 `orthogonalScrollingBehavior = GroupPaging`，实现横向分页滚动
+```objective-c
+- (NSCollectionLayoutSection *)buildPagingCardsSection {
+  NSCollectionLayoutSize *itemSize =
+    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                   heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]];
+  NSCollectionLayoutItem *item = [NSCollectionLayoutItem itemWithLayoutSize:itemSize];
 
-#### 视觉效果
+  NSCollectionLayoutSize *groupSize =
+    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension absoluteDimension:120]
+                                   heightDimension:[NSCollectionLayoutDimension absoluteDimension:100]];
+  NSCollectionLayoutGroup *group =
+    [NSCollectionLayoutGroup horizontalGroupWithLayoutSize:groupSize subitem:item count:1];
 
+  NSCollectionLayoutSection *section = [NSCollectionLayoutSection sectionWithGroup:group];
+  section.orthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehaviorGroupPaging;
+  section.contentInsets = NSDirectionalEdgeInsetsMake(0, 16, 0, 16);
+  section.interGroupSpacing = 10;
+
+  NSCollectionLayoutSize *headerSize =
+    [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
+                                   heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
+  NSCollectionLayoutBoundarySupplementaryItem *header =
+    [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize
+                                                                            elementKind:UICollectionElementKindSectionHeader
+                                                                              alignment:NSRectAlignmentTop];
+  section.boundarySupplementaryItems = @[header];
+
+  NSCollectionLayoutDecorationItem *bg =
+    [NSCollectionLayoutDecorationItem backgroundDecorationItemWithElementKind:MyDecorationBackgroundKind];
+  section.decorationItems = @[bg];
+
+  return section;
+}
 ```
-┌─────────────────────────────────────────┐
-│  Section Header                         │
-├─────────────────────────────────────────┤
-│  ┌────┐  ┌────┐  ┌────┐  ┌────┐       │
-│  │Item│  │Item│  │Item│  │Item│       │
-│  └────┘  └────┘  └────┘  └────┘       │
-│   ←──────── 横向分页滚动 ────────→      │
-├─────────────────────────────────────────┤
-│  Section Footer                         │
-└─────────────────────────────────────────┘
-```
 
----
+### 8.3 Step C：用 sectionProvider 组装 Layout（Section→Layout）
 
-### 3.4 Waterfall Section：瀑布流布局
+```objective-c
+- (UICollectionViewCompositionalLayout *)buildLayout {
+  __weak typeof(self) weakSelf = self;
+  UICollectionViewCompositionalLayout *layout =
+    [[UICollectionViewCompositionalLayout alloc] initWithSectionProvider:^NSCollectionLayoutSection *(NSInteger sectionIndex, id<NSCollectionLayoutEnvironment> env) {
+      __strong typeof(weakSelf) self = weakSelf;
+      if (!self) return nil;
 
-瀑布流布局需要**自定义每个 item 的位置**，使用 `customGroupWithLayoutSize:itemProvider:` 实现。
-
-#### 代码实现
-
-```233:292:WyHelperComponents/Classes/UICollectionViewDemo/WyCompositionalLayoutController.m
-- (NSCollectionLayoutSection *)generateWaterfallSectionWithEnvironment:(id<NSCollectionLayoutEnvironment>)environment {
-    // Swift 对齐：edgeInsets = (top:0, leading:20, bottom:0, trailing:20)
-    NSDirectionalEdgeInsets edgeInsets = NSDirectionalEdgeInsetsMake(0, 20, 0, 20);
-
-    // Swift 对齐：2 列、间距 10
-    NSInteger numberOfColumns = 2;
-    CGFloat space = 10.0;
-
-    // 注意：frames 里已经包含了 edgeInsets，因此 itemWidth 必须从可用宽度中扣掉 leading/trailing；
-    // 同时不要再给 group 额外设置 contentInsets（否则会"双重 inset"，很容易触发 compositional self-sizing 反馈环）。
-    CGFloat contentWidth = environment.container.effectiveContentSize.width;
-    CGFloat availableWidth = contentWidth - edgeInsets.leading - edgeInsets.trailing;
-    CGFloat itemWidth = (availableWidth - (CGFloat)(numberOfColumns - 1) * space) / (CGFloat)numberOfColumns;
-
-    // 预计算 frames 与总高度，避免 OC 下 estimated height 触发反复布局的问题
-    NSMutableArray<NSNumber *> *columnHeights = [NSMutableArray arrayWithCapacity:numberOfColumns];
-    for (NSInteger i = 0; i < numberOfColumns; i++) {
-        [columnHeights addObject:@(edgeInsets.top)];
-    }
-
-    NSMutableArray<NSValue *> *frames = [NSMutableArray arrayWithCapacity:self.items.count];
-    CGFloat maxHeight = 0;
-
-    for (NSInteger i = 0; i < self.items.count; i++) {
-        NSInteger targetColumn = 0;
-        for (NSInteger c = 0; c < numberOfColumns; c++) {
-            if (columnHeights[c].doubleValue < columnHeights[targetColumn].doubleValue) {
-                targetColumn = c;
-            }
-        }
-
-        WaterfallItemModel *model = [self.items objectAtIndex:i];
-        CGFloat itemHeight = model.height;
-
-        CGFloat x = edgeInsets.leading + (itemWidth + space) * (CGFloat)targetColumn;
-        CGFloat y = columnHeights[targetColumn].doubleValue;
-        CGFloat spacingY = (y == edgeInsets.top) ? 0 : space;
-
-        CGRect frame = CGRectMake(x, y + spacingY, itemWidth, itemHeight);
-        [frames addObject:[NSValue valueWithCGRect:frame]];
-
-        CGFloat newHeight = y + spacingY + itemHeight;
-        columnHeights[targetColumn] = @(newHeight);
-        maxHeight = MAX(maxHeight, newHeight);
-    }
-
-    NSCollectionLayoutSize *groupSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0]
-                                                                       heightDimension:[NSCollectionLayoutDimension estimatedDimension:100]];
-
-    NSCollectionLayoutGroup *group = [NSCollectionLayoutGroup customGroupWithLayoutSize:groupSize
-                                                                          itemProvider:^NSArray<NSCollectionLayoutGroupCustomItem *> * _Nonnull(id<NSCollectionLayoutEnvironment>  _Nonnull layoutEnvironment) {
-        NSMutableArray<NSCollectionLayoutGroupCustomItem *> *items = [NSMutableArray arrayWithCapacity:frames.count];
-        for (NSValue *value in frames) {
-            [items addObject:[NSCollectionLayoutGroupCustomItem customItemWithFrame:value.CGRectValue]];
-        }
-        return items;
+      if (sectionIndex == 0) return [self buildGridSection];
+      return [self buildPagingCardsSection];
     }];
 
-    return [NSCollectionLayoutSection sectionWithGroup:group];
+  // 注册 background decoration
+  [layout registerClass:MyBackgroundReusableView.class forDecorationViewOfKind:MyDecorationBackgroundKind];
+
+  // 可选：layout 全局配置（section 之间的间距等）
+  UICollectionViewCompositionalLayoutConfiguration *config = [UICollectionViewCompositionalLayoutConfiguration new];
+  config.interSectionSpacing = 12;
+  layout.configuration = config;
+
+  return layout;
 }
 ```
 
-#### 布局解析
+### 8.4 Step D：把 Layout 装到 CollectionView（Layout→CollectionView）
 
-1. **计算可用宽度**：从 `environment.container.effectiveContentSize.width` 获取容器宽度，减去边距
-2. **计算 item 宽度**：`(可用宽度 - (列数-1) × 间距) / 列数`
-3. **瀑布流算法**：
-   - 维护每列的高度数组 `columnHeights`
-   - 每次选择最短的列放置 item
-   - 计算 item 的 frame 并保存
-4. **创建 Custom Group**：使用 `customGroupWithLayoutSize:itemProvider:` 返回自定义的 item frames
-
-#### 关键 API
-
-- **`environment.container.effectiveContentSize`**：获取容器的有效内容尺寸
-- **`customGroupWithLayoutSize:itemProvider:`**：创建自定义 Group，通过 `itemProvider` 返回每个 item 的 frame
-- **`NSCollectionLayoutGroupCustomItem`**：自定义 item 的 frame
-
-#### 视觉效果
-
+```objective-c
+UICollectionView *cv =
+  [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:[self buildLayout]];
+cv.backgroundColor = UIColor.clearColor;
 ```
-┌─────────────────────────────────────────┐
-│  ┌────┐      ┌────┐                    │
-│  │Item│      │Item│                    │
-│  │ 1  │      │ 2  │                    │
-│  └────┘      └────┘                    │
-│  ┌────┐      ┌────┐                    │
-│  │Item│      │Item│                    │
-│  │ 3  │      │ 4  │                    │
-│  └────┘      │    │                    │
-│  ┌────┐      │    │                    │
-│  │Item│      └────┘                    │
-│  │ 5  │      ┌────┐                    │
-│  └────┘      │Item│                    │
-│              │ 6  │                    │
-│              └────┘                    │
-│         ↓ 竖向滚动                     │
-└─────────────────────────────────────────┘
-```
+
+到这里，一个完整页面的 compositional layout 就搭起来了：  
+**Item → Group → Section → Layout → CollectionView**。
 
 ---
 
-## 4. 第三步：Header/Footer（Supplementary）的使用
+## 9. 对照仓库示例：你该看哪些函数
 
-`UICollectionViewCompositionalLayout` 支持两种层级的 Header/Footer：
+在 `WyCompositionalLayoutController.m` 中，你可以对照这些点去理解“模块如何落地到工程”：
 
-### 4.1 Section 级别的 Header/Footer
-
-每个 section 可以有自己的 header 和 footer，通过 `section.boundarySupplementaryItems` 设置：
-
-```152:160:WyHelperComponents/Classes/UICollectionViewDemo/WyCompositionalLayoutController.m
-NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:40]];
-NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionHeader alignment:NSRectAlignmentTop];
-header.pinToVisibleBounds = NO;
-
-NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:UICollectionElementKindSectionFooter alignment:NSRectAlignmentBottom];
-footer.pinToVisibleBounds = NO;
-section.boundarySupplementaryItems = @[header, footer];
-```
-
-### 4.2 Layout 级别的 Header/Footer
-
-整个 collectionView 可以有全局的 header 和 footer，通过 `layout.configuration.boundarySupplementaryItems` 设置：
-
-```402:416:WyHelperComponents/Classes/UICollectionViewDemo/WyCompositionalLayoutController.m
-NSCollectionLayoutSize *headerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21HeaderHeight]];
-NSCollectionLayoutBoundarySupplementaryItem *header = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:headerSize elementKind:kVEarnRewardV21ElementKindHeader alignment:NSRectAlignmentTop];
-header.pinToVisibleBounds = NO;
-header.zIndex = -1;
-
-NSCollectionLayoutSize *footerSize = [NSCollectionLayoutSize sizeWithWidthDimension:[NSCollectionLayoutDimension fractionalWidthDimension:1.0] heightDimension:[NSCollectionLayoutDimension absoluteDimension:kVEarnRewardV21FooterHeight]];
-NSCollectionLayoutBoundarySupplementaryItem *footer = [NSCollectionLayoutBoundarySupplementaryItem boundarySupplementaryItemWithLayoutSize:footerSize elementKind:kVEarnRewardV21ElementKindFooter alignment:NSRectAlignmentBottom];
-footer.pinToVisibleBounds = NO;
-footer.zIndex = -1;
-
-UICollectionViewCompositionalLayoutConfiguration *config = UICollectionViewCompositionalLayoutConfiguration.new;
-config.interSectionSpacing = (12);
-config.boundarySupplementaryItems = @[header, footer];
-
-layout.configuration = config;
-```
-
-### 4.3 提供 Supplementary View
-
-通过 `supplementaryViewProvider` 根据 `elementKind` 提供对应的视图：
-
-```296:327:WyHelperComponents/Classes/UICollectionViewDemo/WyCompositionalLayoutController.m
-[self.dataSource setSupplementaryViewProvider:^UICollectionReusableView * _Nullable(UICollectionView * _Nonnull collectionView, NSString * _Nonnull elementKind, NSIndexPath * _Nonnull indexPath) {
-    @strongify(self)
-    if ([elementKind isEqualToString:UICollectionElementKindSectionHeader]) {
-        WyCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:elementKind withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class]) forIndexPath:indexPath];
-        NSString *sectionIdentify = [self.dataSnapshot.sectionIdentifiers objectAtIndex:indexPath.section];
-        if (sectionIdentify) {
-            header.titleLabel.text = [NSString stringWithFormat:@"%@-Header", sectionIdentify];
-        }
-        return header;
-    } else if ([elementKind isEqualToString:UICollectionElementKindSectionFooter]) {
-        WyCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:elementKind withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class]) forIndexPath:indexPath];
-        NSString *sectionIdentify = [self.dataSnapshot.sectionIdentifiers objectAtIndex:indexPath.section];
-        if (sectionIdentify) {
-            header.titleLabel.text = [NSString stringWithFormat:@"%@-Footer", sectionIdentify];
-        }
-        return header;
-    } else if ([elementKind isEqualToString:kVEarnRewardV21ElementKindHeader]) {
-        WyCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:elementKind withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class]) forIndexPath:indexPath];
-        header.titleLabel.text = @"CollectionView-Header";
-        return header;
-    } else if ([elementKind isEqualToString:kVEarnRewardV21ElementKindFooter]) {
-        WyCollectionReusableView *header = [collectionView dequeueReusableSupplementaryViewOfKind:elementKind withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class]) forIndexPath:indexPath];
-        header.titleLabel.text = @"CollectionView-Footer";
-        return header;
-    }
-    return nil;
-}];
-```
-
-### 4.4 注册 Supplementary View
-
-在使用前需要注册对应的 Supplementary View：
-
-```424:427:WyHelperComponents/Classes/UICollectionViewDemo/WyCompositionalLayoutController.m
-[_listView registerClass:WyCollectionReusableView.class forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class])];
-[_listView registerClass:WyCollectionReusableView.class forSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class])];
-[_listView registerClass:WyCollectionReusableView.class forSupplementaryViewOfKind:kVEarnRewardV21ElementKindHeader withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class])];
-[_listView registerClass:WyCollectionReusableView.class forSupplementaryViewOfKind:kVEarnRewardV21ElementKindFooter withReuseIdentifier:NSStringFromClass([WyCollectionReusableView class])];
-```
+- **Layout 组装（sectionProvider + configuration）**：`-generateLayout`
+- **Item/Group/Section 常规搭建**：
+  - `-sectionForRankArray`：典型的“Group 嵌套 + section 正交滚动”
+  - `-sectionForVertical`：三列网格（fractionalWidth）
+  - `-sectionForHorizontal`：横向分页卡片
+- **瀑布流（customGroup）**：`-generateWaterfallSectionWithEnvironment:`
+- **Header/Footer 提供与复用**：`supplementaryViewProvider`（DiffableDataSource）
+- **Background decoration 注册**：`[layout registerClass:... forDecorationViewOfKind:]`
 
 ---
 
-## 5. 嵌套 Group 的通用模板
+## 结语（建议你按这个顺序练习）
 
-当需要实现复杂的嵌套布局时，可以按照以下模板思考：
-
-### 5.1 思考步骤
-
-1. **确定最小单元（Item）**：定义单个 cell 的尺寸
-2. **创建子 Group**：将 Item 组织成可复用的局部结构（如一行、一列）
-3. **创建外层 Group**：将子 Group 按另一个方向排列
-4. **创建 Section**：将根 Group 放入 Section，设置 section 行为
-
-### 5.2 示例：Rank Section 的嵌套结构
-
-```
-Item (213×100)
-  ↓
-verticalGroup (213×307, 包含 3 个 Item)
-  ↓
-horizontalGroup (213×330, 包含 1 个 verticalGroup)
-  ↓
-Section (开启正交滚动)
-```
-
-### 5.3 常见嵌套模式
-
-- **横向列表中的竖向堆叠**：`Item → verticalGroup → horizontalGroup → Section`
-- **网格布局**：`Item → horizontalGroup → verticalGroup → Section`
-- **多级嵌套**：`Item → subGroup1 → subGroup2 → rootGroup → Section`
-
----
-
-## 6. 实用技巧与注意事项
-
-### 6.1 尺寸类型的选择
-
-- **`absoluteDimension`**：固定尺寸，适用于已知大小的 item
-- **`fractionalWidthDimension` / `fractionalHeightDimension`**：相对尺寸，相对于 Group 的百分比
-- **`estimatedDimension`**：估算尺寸，系统会根据内容自动调整，但可能触发布局反馈环
-
-### 6.2 避免布局反馈环
-
-在瀑布流示例中，代码注释特别强调了：
-
-```241:242:WyHelperComponents/Classes/UICollectionViewDemo/WyCompositionalLayoutController.m
-    // 注意：frames 里已经包含了 edgeInsets，因此 itemWidth 必须从可用宽度中扣掉 leading/trailing；
-    // 同时不要再给 group 额外设置 contentInsets（否则会"双重 inset"，很容易触发 compositional self-sizing 反馈环）。
-```
-
-**建议**：
-- 瀑布流等需要精确计算的布局，尽量预计算 frame，避免使用 `estimatedDimension`
-- 避免重复设置 insets（在 frame 计算中已包含的，不要再在 group/section 中设置）
-
-### 6.3 何时使用 Custom Group
-
-- **规则布局**：使用 `horizontalGroup`、`verticalGroup` 等标准 Group
-- **不规则布局**：使用 `customGroupWithLayoutSize:itemProvider:` 自定义每个 item 的位置
-  - 瀑布流
-  - 杂志流
-  - 任意自定义排列
-
-### 6.4 正交滚动的使用场景
-
-- **横向 Banner**：`horizontalGroup` + `orthogonalScrollingBehavior = GroupPaging`
-- **卡片堆叠**：`verticalGroup` 嵌套到 `horizontalGroup` + 正交滚动
-- **注意**：正交滚动只影响该 section，不影响整个 collectionView 的滚动方向
-
-### 6.5 性能优化建议
-
-1. **预计算尺寸**：对于瀑布流等复杂布局，提前计算好所有 item 的 frame
-2. **合理使用 estimatedDimension**：在简单布局中使用，复杂布局中避免
-3. **复用 Supplementary View**：确保正确注册和复用 header/footer
-
----
-
-## 总结
-
-`UICollectionViewCompositionalLayout` 通过 **Item → Group → Section** 的三层结构，提供了强大的布局能力：
-
-- **Item**：定义单个 cell 的尺寸
-- **Group**：组织 Item 的排列方式，支持嵌套
-- **Section**：控制布局行为和装饰（滚动、间距、header/footer）
-
-通过组合使用标准 Group 和 Custom Group，可以实现从简单的网格布局到复杂的瀑布流、杂志流等各种布局效果。
-
----
-
-## 参考
-
-- 示例代码：[`WyCompositionalLayoutController.m`](WyCompositionalLayoutController.m)
-- Apple 官方文档：[UICollectionViewCompositionalLayout](https://developer.apple.com/documentation/uikit/views_and_controls/collection_views/layouts/customizing_collection_view_layouts)
+1. 先用 **网格 section** 把 `size + inset + spacing` 理顺  
+2. 再加 **横向分页 section** 理解 `orthogonalScrollingBehavior`  
+3. 最后挑战 **customGroup 瀑布流**（把 “尺寸计算” 从 AutoLayout/estimated 迁到你自己的 frame 计算）
 

@@ -31,6 +31,7 @@
         @"Bezier":@"BezierTestViewController",
         @"UILael":@"UILabelTestViewController",
         @"Section分页":@"SectionPagingViewController",
+        @"CompositionalLayout2":@"WyCompositionalListDemoController",
     };
     
     [self setupView];
